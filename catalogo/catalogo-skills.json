@@ -1,0 +1,968 @@
+{
+  "versao": "1.0",
+  "data": "2026-10-05",
+  "escala": [
+    {
+      "nota": 0,
+      "rotulo": "Não faço",
+      "descricao": "Não conhece ou nunca praticou.",
+      "evidencia_minima": "Nenhuma."
+    },
+    {
+      "nota": 1,
+      "rotulo": "Novato",
+      "descricao": "Entende o conceito e já viu ser aplicado; precisa de ajuda para executar.",
+      "evidencia_minima": "Curso, leitura ou participação acompanhando alguém."
+    },
+    {
+      "nota": 2,
+      "rotulo": "Praticante",
+      "descricao": "Executa no dia a dia com supervisão ou revisão de alguém mais experiente.",
+      "evidencia_minima": "Entregas em projeto com revisão de outra pessoa."
+    },
+    {
+      "nota": 3,
+      "rotulo": "Competente",
+      "descricao": "Executa sozinho, com qualidade consistente, e escolhe o método certo para o contexto.",
+      "evidencia_minima": "Pelo menos 1 projeto ou case recente conduzido sem supervisão."
+    },
+    {
+      "nota": 4,
+      "rotulo": "Proficiente",
+      "descricao": "É um diferencial: resolve casos complexos, adapta métodos e orienta outras pessoas nesta skill.",
+      "evidencia_minima": "Pelo menos 2 projetos ou cases e exemplo de orientação dada a alguém."
+    },
+    {
+      "nota": 5,
+      "rotulo": "Referência",
+      "descricao": "É referência para a prática: cria padrões, materiais ou treinamentos que outras pessoas usam.",
+      "evidencia_minima": "Evidência de 4 mais um material, padrão, palestra ou treinamento usado pelo time. Exige calibração."
+    }
+  ],
+  "trilhas": [
+    {
+      "id": "product-design",
+      "nome": "Product Design",
+      "descricao": "Generalista de produto: do discovery à entrega, responsável pelo resultado do produto e não só pela tela."
+    },
+    {
+      "id": "ux-ui-design",
+      "nome": "UX/UI Design",
+      "descricao": "Foco em interação, interface e sistema visual. Une os perfis UX Design e UI Design da matriz atual."
+    },
+    {
+      "id": "ux-research",
+      "nome": "UX Research",
+      "descricao": "Planeja e conduz pesquisa quali e quanti e transforma achados em decisões."
+    },
+    {
+      "id": "service-design",
+      "nome": "Service Design",
+      "descricao": "Desenha serviços ponta a ponta: jornadas, blueprints, operação e co-criação com o negócio."
+    },
+    {
+      "id": "ux-strategy",
+      "nome": "UX Strategy",
+      "descricao": "Conecta design a estratégia de negócio, métricas e operação da prática (DesignOps)."
+    },
+    {
+      "id": "content-design",
+      "nome": "Content Design (UX Writing)",
+      "descricao": "Linguagem, microcopy e arquitetura de conteúdo."
+    },
+    {
+      "id": "conversational-design",
+      "nome": "Conversational Design (VUX/VUI)",
+      "descricao": "Interfaces de voz, chatbots e assistentes de IA. Une VUX e VUI, que têm a mesma expectativa na matriz atual."
+    }
+  ],
+  "niveis": [
+    {
+      "id": "N1",
+      "nome": "Júnior",
+      "descricao": "Executa com orientação próxima; aprende os fundamentos e o processo do time.",
+      "tempo_minimo_meses_no_nivel_anterior": null,
+      "regra_extra": null
+    },
+    {
+      "id": "N2",
+      "nome": "Pleno",
+      "descricao": "Conduz entregas do próprio escopo com autonomia e pede ajuda nos casos complexos.",
+      "tempo_minimo_meses_no_nivel_anterior": 12,
+      "regra_extra": null
+    },
+    {
+      "id": "N3",
+      "nome": "Sênior",
+      "descricao": "Resolve problemas ambíguos de ponta a ponta, influencia o time e orienta pessoas menos experientes.",
+      "tempo_minimo_meses_no_nivel_anterior": 18,
+      "regra_extra": null
+    },
+    {
+      "id": "N4-E",
+      "nome": "Especialista",
+      "descricao": "Trilha técnica. Referência da prática em um tema; eleva o padrão de qualidade além do próprio projeto.",
+      "tempo_minimo_meses_no_nivel_anterior": 24,
+      "regra_extra": "Pelo menos 2 skills núcleo validadas em 5 (referência)."
+    },
+    {
+      "id": "N4-L",
+      "nome": "Lead de Design",
+      "descricao": "Trilha de gestão. Lidera pessoas e um conjunto de projetos; responde pelo desenvolvimento do time.",
+      "tempo_minimo_meses_no_nivel_anterior": 24,
+      "regra_extra": null
+    },
+    {
+      "id": "N5",
+      "nome": "Principal / Head",
+      "descricao": "Define a direção da prática de design e produto; atua com a liderança da empresa.",
+      "tempo_minimo_meses_no_nivel_anterior": 24,
+      "regra_extra": "Pelo menos metade das skills núcleo validadas em 5."
+    }
+  ],
+  "categorias": [
+    {
+      "id": "estrategia",
+      "nome": "Estratégia de Produto"
+    },
+    {
+      "id": "pesquisa",
+      "nome": "Pesquisa com Usuários"
+    },
+    {
+      "id": "dados",
+      "nome": "Dados e Impacto"
+    },
+    {
+      "id": "servico",
+      "nome": "Experiência e Serviço"
+    },
+    {
+      "id": "interacao",
+      "nome": "Interação e Prototipação"
+    },
+    {
+      "id": "visual",
+      "nome": "Design Visual e Sistemas"
+    },
+    {
+      "id": "conteudo",
+      "nome": "Conteúdo e Conversação"
+    },
+    {
+      "id": "entrega",
+      "nome": "Tecnologia e Entrega"
+    }
+  ],
+  "pesos": {
+    "nucleo": "Skill que define a trilha",
+    "complementar": "Apoia a trilha",
+    "exposicao": "Basta conhecer"
+  },
+  "nota_esperada_por_peso_e_nivel": {
+    "nucleo": {
+      "N1": 2,
+      "N2": 3,
+      "N3": 4,
+      "N4-E": 4,
+      "N4-L": 4,
+      "N5": 4
+    },
+    "complementar": {
+      "N1": 1,
+      "N2": 2,
+      "N3": 3,
+      "N4-E": 3,
+      "N4-L": 3,
+      "N5": 3
+    },
+    "exposicao": {
+      "N1": 0,
+      "N2": 1,
+      "N3": 1,
+      "N4-E": 2,
+      "N4-L": 1,
+      "N5": 2
+    }
+  },
+  "hard_skills": [
+    {
+      "id": "estrategia-produto",
+      "nome": "Estratégia e visão de produto",
+      "categoria": "estrategia",
+      "descricao": "Define problemas conectando usuário, negócio e contexto e contribui para a visão e o roadmap do produto.",
+      "origem": "matriz-1a3",
+      "nome_na_matriz_original": "Estratégia de produto",
+      "peso_por_trilha": {
+        "product-design": "nucleo",
+        "ux-ui-design": "complementar",
+        "ux-research": "complementar",
+        "service-design": "complementar",
+        "ux-strategy": "nucleo",
+        "content-design": "exposicao",
+        "conversational-design": "complementar"
+      }
+    },
+    {
+      "id": "discovery-hipoteses",
+      "nome": "Discovery e hipóteses",
+      "categoria": "estrategia",
+      "descricao": "Faz discovery contínuo e formula hipóteses testáveis considerando valor, risco e viabilidade.",
+      "origem": "skillmatrix-0a5",
+      "nome_na_matriz_original": null,
+      "peso_por_trilha": {
+        "product-design": "nucleo",
+        "ux-ui-design": "complementar",
+        "ux-research": "complementar",
+        "service-design": "complementar",
+        "ux-strategy": "nucleo",
+        "content-design": "exposicao",
+        "conversational-design": "complementar"
+      }
+    },
+    {
+      "id": "priorizacao-tradeoffs",
+      "nome": "Priorização e trade-offs",
+      "categoria": "estrategia",
+      "descricao": "Prioriza com critérios claros (RICE, ICE, valor x esforço), define MVP e incrementos e pesa UX, prazo, custo e técnica.",
+      "origem": "skillmatrix-0a5",
+      "nome_na_matriz_original": null,
+      "peso_por_trilha": {
+        "product-design": "nucleo",
+        "ux-ui-design": "complementar",
+        "ux-research": "exposicao",
+        "service-design": "complementar",
+        "ux-strategy": "nucleo",
+        "content-design": "exposicao",
+        "conversational-design": "complementar"
+      }
+    },
+    {
+      "id": "metricas-produto",
+      "nome": "Métricas de produto e OKRs",
+      "categoria": "estrategia",
+      "descricao": "Define métricas de sucesso além da usabilidade e escreve OKRs ligados a usuário e negócio.",
+      "origem": "skillmatrix-0a5",
+      "nome_na_matriz_original": null,
+      "peso_por_trilha": {
+        "product-design": "nucleo",
+        "ux-ui-design": "exposicao",
+        "ux-research": "complementar",
+        "service-design": "complementar",
+        "ux-strategy": "nucleo",
+        "content-design": "exposicao",
+        "conversational-design": "complementar"
+      }
+    },
+    {
+      "id": "benchmark-mercado",
+      "nome": "Benchmark e visão de mercado",
+      "categoria": "estrategia",
+      "descricao": "Analisa concorrentes, tendências e oportunidades de mercado.",
+      "origem": "matriz-1a3",
+      "nome_na_matriz_original": "Benchmark competitivo",
+      "peso_por_trilha": {
+        "product-design": "nucleo",
+        "ux-ui-design": "complementar",
+        "ux-research": "nucleo",
+        "service-design": "complementar",
+        "ux-strategy": "nucleo",
+        "content-design": "complementar",
+        "conversational-design": "complementar"
+      }
+    },
+    {
+      "id": "visao-negocio",
+      "nome": "Visão de negócio e riscos",
+      "categoria": "estrategia",
+      "descricao": "Entende regras e modelo de negócio, identifica riscos e os discute como parte da decisão.",
+      "origem": "skillmatrix-0a5",
+      "nome_na_matriz_original": null,
+      "peso_por_trilha": {
+        "product-design": "complementar",
+        "ux-ui-design": "exposicao",
+        "ux-research": "complementar",
+        "service-design": "nucleo",
+        "ux-strategy": "nucleo",
+        "content-design": "exposicao",
+        "conversational-design": "exposicao"
+      }
+    },
+    {
+      "id": "designops",
+      "nome": "Estratégia de design (DesignOps)",
+      "categoria": "estrategia",
+      "descricao": "Estrutura processos, rituais, ferramentas e governança da prática de design.",
+      "origem": "matriz-1a3",
+      "nome_na_matriz_original": "Estratégia de design (DesignOps)",
+      "peso_por_trilha": {
+        "product-design": "complementar",
+        "ux-ui-design": "complementar",
+        "ux-research": "exposicao",
+        "service-design": "exposicao",
+        "ux-strategy": "nucleo",
+        "content-design": "exposicao",
+        "conversational-design": "exposicao"
+      }
+    },
+    {
+      "id": "planejamento-pesquisa",
+      "nome": "Planejamento de pesquisa",
+      "categoria": "pesquisa",
+      "descricao": "Define objetivo, público, recrutamento e roteiro sem induzir o usuário.",
+      "origem": "matriz-1a3",
+      "nome_na_matriz_original": "Planejamento de pesquisa",
+      "peso_por_trilha": {
+        "product-design": "nucleo",
+        "ux-ui-design": "complementar",
+        "ux-research": "nucleo",
+        "service-design": "complementar",
+        "ux-strategy": "nucleo",
+        "content-design": "complementar",
+        "conversational-design": "nucleo"
+      }
+    },
+    {
+      "id": "pesquisa-qualitativa",
+      "nome": "Pesquisa qualitativa",
+      "categoria": "pesquisa",
+      "descricao": "Entrevistas em profundidade, etnografia, shadowing, sessões generativas.",
+      "origem": "matriz-1a3",
+      "nome_na_matriz_original": "Pesquisa qualitativa",
+      "peso_por_trilha": {
+        "product-design": "nucleo",
+        "ux-ui-design": "nucleo",
+        "ux-research": "nucleo",
+        "service-design": "nucleo",
+        "ux-strategy": "complementar",
+        "content-design": "complementar",
+        "conversational-design": "nucleo"
+      }
+    },
+    {
+      "id": "pesquisa-quantitativa",
+      "nome": "Pesquisa quantitativa",
+      "categoria": "pesquisa",
+      "descricao": "Surveys, amostragem e análise estatística básica.",
+      "origem": "matriz-1a3",
+      "nome_na_matriz_original": "Pesquisa quantitativa",
+      "peso_por_trilha": {
+        "product-design": "nucleo",
+        "ux-ui-design": "complementar",
+        "ux-research": "nucleo",
+        "service-design": "complementar",
+        "ux-strategy": "nucleo",
+        "content-design": "exposicao",
+        "conversational-design": "complementar"
+      }
+    },
+    {
+      "id": "testes-usabilidade",
+      "nome": "Testes de usabilidade e conceito",
+      "categoria": "pesquisa",
+      "descricao": "Estrutura cenários e tarefas, testa conceitos e protótipos e registra achados.",
+      "origem": "matriz-1a3",
+      "nome_na_matriz_original": "Testes de usabilidade",
+      "peso_por_trilha": {
+        "product-design": "nucleo",
+        "ux-ui-design": "nucleo",
+        "ux-research": "nucleo",
+        "service-design": "exposicao",
+        "ux-strategy": "complementar",
+        "content-design": "complementar",
+        "conversational-design": "nucleo"
+      }
+    },
+    {
+      "id": "sintese-insights",
+      "nome": "Análise e síntese de insights",
+      "categoria": "pesquisa",
+      "descricao": "Sintetiza grandes volumes de informação e conecta dados quali, quanti e benchmark em recomendações.",
+      "origem": "skillmatrix-0a5",
+      "nome_na_matriz_original": null,
+      "peso_por_trilha": {
+        "product-design": "nucleo",
+        "ux-ui-design": "complementar",
+        "ux-research": "nucleo",
+        "service-design": "nucleo",
+        "ux-strategy": "nucleo",
+        "content-design": "complementar",
+        "conversational-design": "complementar"
+      }
+    },
+    {
+      "id": "dados-metricas-ux",
+      "nome": "Análise de dados e métricas UX",
+      "categoria": "dados",
+      "descricao": "Lê dados de uso, funil e comportamento e recomenda a partir deles.",
+      "origem": "matriz-1a3",
+      "nome_na_matriz_original": "Análise de dados e métricas UX",
+      "peso_por_trilha": {
+        "product-design": "nucleo",
+        "ux-ui-design": "complementar",
+        "ux-research": "nucleo",
+        "service-design": "complementar",
+        "ux-strategy": "nucleo",
+        "content-design": "complementar",
+        "conversational-design": "complementar"
+      }
+    },
+    {
+      "id": "experimentacao",
+      "nome": "Experimentação e testes A/B",
+      "categoria": "dados",
+      "descricao": "Estrutura MVPs, pilotos e testes A/B como aprendizado.",
+      "origem": "skillmatrix-0a5",
+      "nome_na_matriz_original": null,
+      "peso_por_trilha": {
+        "product-design": "complementar",
+        "ux-ui-design": "complementar",
+        "ux-research": "nucleo",
+        "service-design": "exposicao",
+        "ux-strategy": "complementar",
+        "content-design": "complementar",
+        "conversational-design": "complementar"
+      }
+    },
+    {
+      "id": "pos-release",
+      "nome": "Acompanhamento pós-release",
+      "categoria": "dados",
+      "descricao": "Monitora uso depois da entrega e itera a solução a partir de métricas reais.",
+      "origem": "skillmatrix-0a5",
+      "nome_na_matriz_original": null,
+      "peso_por_trilha": {
+        "product-design": "complementar",
+        "ux-ui-design": "complementar",
+        "ux-research": "complementar",
+        "service-design": "complementar",
+        "ux-strategy": "complementar",
+        "content-design": "complementar",
+        "conversational-design": "complementar"
+      }
+    },
+    {
+      "id": "personas-jornadas",
+      "nome": "Personas e jornadas",
+      "categoria": "servico",
+      "descricao": "Cria personas e mapas de jornada com dores e oportunidades.",
+      "origem": "matriz-1a3",
+      "nome_na_matriz_original": "Personas e jornadas",
+      "peso_por_trilha": {
+        "product-design": "nucleo",
+        "ux-ui-design": "nucleo",
+        "ux-research": "nucleo",
+        "service-design": "nucleo",
+        "ux-strategy": "complementar",
+        "content-design": "complementar",
+        "conversational-design": "complementar"
+      }
+    },
+    {
+      "id": "blueprint-servicos",
+      "nome": "Blueprint de serviços",
+      "categoria": "servico",
+      "descricao": "Mapeia frente e bastidores do serviço, áreas de suporte e pontos de falha.",
+      "origem": "matriz-1a3",
+      "nome_na_matriz_original": "Blueprint de serviços",
+      "peso_por_trilha": {
+        "product-design": "complementar",
+        "ux-ui-design": "exposicao",
+        "ux-research": "complementar",
+        "service-design": "nucleo",
+        "ux-strategy": "complementar",
+        "content-design": "exposicao",
+        "conversational-design": "exposicao"
+      }
+    },
+    {
+      "id": "facilitacao-workshops",
+      "nome": "Facilitação de workshops",
+      "categoria": "servico",
+      "descricao": "Planeja e conduz workshops e design sprints com foco no objetivo comum.",
+      "origem": "matriz-1a3",
+      "nome_na_matriz_original": "Facilitação de workshops",
+      "peso_por_trilha": {
+        "product-design": "complementar",
+        "ux-ui-design": "complementar",
+        "ux-research": "complementar",
+        "service-design": "nucleo",
+        "ux-strategy": "nucleo",
+        "content-design": "exposicao",
+        "conversational-design": "complementar"
+      }
+    },
+    {
+      "id": "cocriacao-stakeholders",
+      "nome": "Co-criação com stakeholders",
+      "categoria": "servico",
+      "descricao": "Cria junto com negócio, tecnologia e clientes, construindo consenso.",
+      "origem": "matriz-1a3",
+      "nome_na_matriz_original": "Co-criação com stakeholders",
+      "peso_por_trilha": {
+        "product-design": "complementar",
+        "ux-ui-design": "complementar",
+        "ux-research": "complementar",
+        "service-design": "nucleo",
+        "ux-strategy": "nucleo",
+        "content-design": "complementar",
+        "conversational-design": "complementar"
+      }
+    },
+    {
+      "id": "arquitetura-informacao",
+      "nome": "Arquitetura da informação",
+      "categoria": "interacao",
+      "descricao": "Organiza informação e navegação de forma coesa (card sorting, árvores, taxonomia).",
+      "origem": "matriz-1a3",
+      "nome_na_matriz_original": "Arquitetura da informação",
+      "peso_por_trilha": {
+        "product-design": "nucleo",
+        "ux-ui-design": "nucleo",
+        "ux-research": "complementar",
+        "service-design": "complementar",
+        "ux-strategy": "complementar",
+        "content-design": "complementar",
+        "conversational-design": "complementar"
+      }
+    },
+    {
+      "id": "fluxos-usuario",
+      "nome": "Fluxos de usuário e fluxogramas",
+      "categoria": "interacao",
+      "descricao": "Desenha fluxos de tarefa e diagramas de interação claros e completos.",
+      "origem": "skillmatrix-0a5",
+      "nome_na_matriz_original": null,
+      "peso_por_trilha": {
+        "product-design": "nucleo",
+        "ux-ui-design": "nucleo",
+        "ux-research": "exposicao",
+        "service-design": "complementar",
+        "ux-strategy": "exposicao",
+        "content-design": "complementar",
+        "conversational-design": "nucleo"
+      }
+    },
+    {
+      "id": "wireframes",
+      "nome": "Wireframes",
+      "categoria": "interacao",
+      "descricao": "Explora alternativas em baixa fidelidade antes de detalhar.",
+      "origem": "matriz-1a3",
+      "nome_na_matriz_original": "Wireframes",
+      "peso_por_trilha": {
+        "product-design": "nucleo",
+        "ux-ui-design": "nucleo",
+        "ux-research": "exposicao",
+        "service-design": "complementar",
+        "ux-strategy": "complementar",
+        "content-design": "exposicao",
+        "conversational-design": "complementar"
+      }
+    },
+    {
+      "id": "prototipacao",
+      "nome": "Prototipação",
+      "categoria": "interacao",
+      "descricao": "Cria protótipos navegáveis na fidelidade certa para testar e comunicar.",
+      "origem": "matriz-1a3",
+      "nome_na_matriz_original": "Prototipação",
+      "peso_por_trilha": {
+        "product-design": "nucleo",
+        "ux-ui-design": "nucleo",
+        "ux-research": "exposicao",
+        "service-design": "complementar",
+        "ux-strategy": "complementar",
+        "content-design": "exposicao",
+        "conversational-design": "complementar"
+      }
+    },
+    {
+      "id": "analise-heuristica",
+      "nome": "Análise heurística",
+      "categoria": "interacao",
+      "descricao": "Avalia interfaces com heurísticas de Nielsen e propõe melhorias.",
+      "origem": "skillmatrix-0a5",
+      "nome_na_matriz_original": null,
+      "peso_por_trilha": {
+        "product-design": "complementar",
+        "ux-ui-design": "nucleo",
+        "ux-research": "nucleo",
+        "service-design": "exposicao",
+        "ux-strategy": "exposicao",
+        "content-design": "complementar",
+        "conversational-design": "complementar"
+      }
+    },
+    {
+      "id": "design-visual-ui",
+      "nome": "Design visual / UI",
+      "categoria": "visual",
+      "descricao": "Hierarquia, grid, tipografia, iconografia e linguagem visual da marca.",
+      "origem": "matriz-1a3",
+      "nome_na_matriz_original": "Design Visual / UI",
+      "peso_por_trilha": {
+        "product-design": "complementar",
+        "ux-ui-design": "nucleo",
+        "ux-research": "exposicao",
+        "service-design": "complementar",
+        "ux-strategy": "exposicao",
+        "content-design": "exposicao",
+        "conversational-design": "complementar"
+      }
+    },
+    {
+      "id": "design-system",
+      "nome": "Design System e tokens",
+      "categoria": "visual",
+      "descricao": "Usa, cria e documenta componentes e tokens pensando em escala.",
+      "origem": "matriz-1a3",
+      "nome_na_matriz_original": "Design Tokens / Design System",
+      "peso_por_trilha": {
+        "product-design": "complementar",
+        "ux-ui-design": "nucleo",
+        "ux-research": "exposicao",
+        "service-design": "exposicao",
+        "ux-strategy": "exposicao",
+        "content-design": "exposicao",
+        "conversational-design": "exposicao"
+      }
+    },
+    {
+      "id": "acessibilidade",
+      "nome": "Acessibilidade",
+      "categoria": "visual",
+      "descricao": "Aplica WCAG e considera pessoas com deficiência desde a concepção.",
+      "origem": "matriz-1a3",
+      "nome_na_matriz_original": "Acessibilidade",
+      "peso_por_trilha": {
+        "product-design": "complementar",
+        "ux-ui-design": "nucleo",
+        "ux-research": "complementar",
+        "service-design": "complementar",
+        "ux-strategy": "exposicao",
+        "content-design": "nucleo",
+        "conversational-design": "nucleo"
+      }
+    },
+    {
+      "id": "motion",
+      "nome": "Motion design",
+      "categoria": "visual",
+      "descricao": "Define animações e transições coerentes com a marca e a interação.",
+      "origem": "skillmatrix-0a5",
+      "nome_na_matriz_original": null,
+      "peso_por_trilha": {
+        "product-design": "exposicao",
+        "ux-ui-design": "complementar",
+        "ux-research": "exposicao",
+        "service-design": "exposicao",
+        "ux-strategy": "exposicao",
+        "content-design": "exposicao",
+        "conversational-design": "exposicao"
+      }
+    },
+    {
+      "id": "dataviz",
+      "nome": "Visualização de dados",
+      "categoria": "visual",
+      "descricao": "Transforma dados complexos em gráficos e painéis claros.",
+      "origem": "skillmatrix-0a5",
+      "nome_na_matriz_original": null,
+      "peso_por_trilha": {
+        "product-design": "complementar",
+        "ux-ui-design": "complementar",
+        "ux-research": "complementar",
+        "service-design": "exposicao",
+        "ux-strategy": "complementar",
+        "content-design": "exposicao",
+        "conversational-design": "exposicao"
+      }
+    },
+    {
+      "id": "ux-writing",
+      "nome": "Redação UX / Microcopy",
+      "categoria": "conteudo",
+      "descricao": "Escreve textos de interface claros, no tom de voz da marca.",
+      "origem": "matriz-1a3",
+      "nome_na_matriz_original": "Redação UX / Microcopy",
+      "peso_por_trilha": {
+        "product-design": "complementar",
+        "ux-ui-design": "complementar",
+        "ux-research": "complementar",
+        "service-design": "complementar",
+        "ux-strategy": "exposicao",
+        "content-design": "nucleo",
+        "conversational-design": "complementar"
+      }
+    },
+    {
+      "id": "escaneabilidade",
+      "nome": "Escrita para escaneabilidade",
+      "categoria": "conteudo",
+      "descricao": "Estrutura conteúdo para leitura rápida em tela.",
+      "origem": "matriz-1a3",
+      "nome_na_matriz_original": "Escrita para escaneabilidade",
+      "peso_por_trilha": {
+        "product-design": "complementar",
+        "ux-ui-design": "complementar",
+        "ux-research": "complementar",
+        "service-design": "complementar",
+        "ux-strategy": "exposicao",
+        "content-design": "nucleo",
+        "conversational-design": "complementar"
+      }
+    },
+    {
+      "id": "escrita-voz",
+      "nome": "Escrita para voz",
+      "categoria": "conteudo",
+      "descricao": "Escreve diálogos naturais para interfaces de voz e chat.",
+      "origem": "matriz-1a3",
+      "nome_na_matriz_original": "Escrita para voz (conversacional)",
+      "peso_por_trilha": {
+        "product-design": "exposicao",
+        "ux-ui-design": "exposicao",
+        "ux-research": "exposicao",
+        "service-design": "exposicao",
+        "ux-strategy": "exposicao",
+        "content-design": "complementar",
+        "conversational-design": "nucleo"
+      }
+    },
+    {
+      "id": "intents-ia",
+      "nome": "Mapeamento de intents (IA)",
+      "categoria": "conteudo",
+      "descricao": "Mapeia intenções, entidades e exemplos de treino de assistentes.",
+      "origem": "matriz-1a3",
+      "nome_na_matriz_original": "Mapeamento de intents (IA)",
+      "peso_por_trilha": {
+        "product-design": "exposicao",
+        "ux-ui-design": "exposicao",
+        "ux-research": "complementar",
+        "service-design": "exposicao",
+        "ux-strategy": "exposicao",
+        "content-design": "complementar",
+        "conversational-design": "nucleo"
+      }
+    },
+    {
+      "id": "fluxos-conversacionais",
+      "nome": "Design de fluxos conversacionais",
+      "categoria": "conteudo",
+      "descricao": "Desenha fluxos de conversa com tratamento de erro e fallback.",
+      "origem": "matriz-1a3",
+      "nome_na_matriz_original": "Design de fluxos conversacionais",
+      "peso_por_trilha": {
+        "product-design": "complementar",
+        "ux-ui-design": "exposicao",
+        "ux-research": "complementar",
+        "service-design": "complementar",
+        "ux-strategy": "exposicao",
+        "content-design": "complementar",
+        "conversational-design": "nucleo"
+      }
+    },
+    {
+      "id": "front-end",
+      "nome": "Conhecimento de front-end",
+      "categoria": "entrega",
+      "descricao": "Entende HTML, CSS e limitações técnicas para dialogar com engenharia.",
+      "origem": "matriz-1a3",
+      "nome_na_matriz_original": "Conhecimento de front-end",
+      "peso_por_trilha": {
+        "product-design": "complementar",
+        "ux-ui-design": "complementar",
+        "ux-research": "exposicao",
+        "service-design": "complementar",
+        "ux-strategy": "exposicao",
+        "content-design": "exposicao",
+        "conversational-design": "complementar"
+      }
+    },
+    {
+      "id": "handover",
+      "nome": "Handover e especificação",
+      "categoria": "entrega",
+      "descricao": "Entrega specs com racional, regras e estados, e acompanha dúvidas do time técnico.",
+      "origem": "skillmatrix-0a5",
+      "nome_na_matriz_original": null,
+      "peso_por_trilha": {
+        "product-design": "complementar",
+        "ux-ui-design": "nucleo",
+        "ux-research": "exposicao",
+        "service-design": "complementar",
+        "ux-strategy": "exposicao",
+        "content-design": "complementar",
+        "conversational-design": "nucleo"
+      }
+    },
+    {
+      "id": "qualidade-implementacao",
+      "nome": "Qualidade de implementação",
+      "categoria": "entrega",
+      "descricao": "Garante coerência entre o que foi desenhado e o que foi entregue (design QA).",
+      "origem": "skillmatrix-0a5",
+      "nome_na_matriz_original": null,
+      "peso_por_trilha": {
+        "product-design": "complementar",
+        "ux-ui-design": "nucleo",
+        "ux-research": "exposicao",
+        "service-design": "exposicao",
+        "ux-strategy": "exposicao",
+        "content-design": "complementar",
+        "conversational-design": "complementar"
+      }
+    },
+    {
+      "id": "ia-no-design",
+      "nome": "IA aplicada ao design",
+      "categoria": "entrega",
+      "descricao": "Usa ferramentas de IA (Figma Make, Lovable, LLMs) com critério para pesquisar, prototipar e sintetizar.",
+      "origem": "skillmatrix-0a5",
+      "nome_na_matriz_original": null,
+      "peso_por_trilha": {
+        "product-design": "complementar",
+        "ux-ui-design": "complementar",
+        "ux-research": "complementar",
+        "service-design": "complementar",
+        "ux-strategy": "complementar",
+        "content-design": "complementar",
+        "conversational-design": "nucleo"
+      }
+    }
+  ],
+  "soft_skills": [
+    {
+      "id": "comunicacao-storytelling",
+      "nome": "Comunicação e storytelling",
+      "descricao": "Comunica decisões conectando dados, usuário e impacto, com narrativa adequada ao público.",
+      "nota_esperada_por_nivel": {
+        "N1": 2,
+        "N2": 3,
+        "N3": 4,
+        "N4-E": 4,
+        "N4-L": 4,
+        "N5": 5
+      }
+    },
+    {
+      "id": "influencia-negociacao",
+      "nome": "Influência e negociação",
+      "descricao": "Defende soluções com base em impacto, negocia trade-offs e constrói consenso.",
+      "nota_esperada_por_nivel": {
+        "N1": 1,
+        "N2": 2,
+        "N3": 3,
+        "N4-E": 4,
+        "N4-L": 4,
+        "N5": 5
+      }
+    },
+    {
+      "id": "colaboracao",
+      "nome": "Colaboração e trabalho em equipe",
+      "descricao": "Trabalha junto com produto, engenharia e negócio desde o discovery, aberto a crítica.",
+      "nota_esperada_por_nivel": {
+        "N1": 2,
+        "N2": 3,
+        "N3": 4,
+        "N4-E": 4,
+        "N4-L": 5,
+        "N5": 5
+      }
+    },
+    {
+      "id": "sintese-decisao",
+      "nome": "Síntese para decisão",
+      "descricao": "Transforma achados e discussões em decisões claras e registradas.",
+      "nota_esperada_por_nivel": {
+        "N1": 1,
+        "N2": 2,
+        "N3": 3,
+        "N4-E": 4,
+        "N4-L": 4,
+        "N5": 5
+      }
+    },
+    {
+      "id": "ownership",
+      "nome": "Ownership e autonomia",
+      "descricao": "Assume o problema, acompanha o resultado depois da entrega e atua sem dependência excessiva.",
+      "nota_esperada_por_nivel": {
+        "N1": 2,
+        "N2": 3,
+        "N3": 4,
+        "N4-E": 4,
+        "N4-L": 4,
+        "N5": 5
+      }
+    },
+    {
+      "id": "proatividade",
+      "nome": "Proatividade e visão de oportunidade",
+      "descricao": "Identifica oportunidades de produto e de melhoria e age sobre elas sem esperar pedido.",
+      "nota_esperada_por_nivel": {
+        "N1": 1,
+        "N2": 2,
+        "N3": 3,
+        "N4-E": 4,
+        "N4-L": 4,
+        "N5": 5
+      }
+    },
+    {
+      "id": "planejamento",
+      "nome": "Planejamento e prioridades",
+      "descricao": "Organiza tempo e tarefas, cumpre combinados e avisa cedo quando algo não vai caber.",
+      "nota_esperada_por_nivel": {
+        "N1": 2,
+        "N2": 3,
+        "N3": 3,
+        "N4-E": 4,
+        "N4-L": 4,
+        "N5": 4
+      }
+    },
+    {
+      "id": "adaptabilidade",
+      "nome": "Adaptabilidade e aprendizado",
+      "descricao": "Aprende rápido, testa ferramentas e métodos novos e lida bem com mudança de contexto.",
+      "nota_esperada_por_nivel": {
+        "N1": 2,
+        "N2": 3,
+        "N3": 3,
+        "N4-E": 4,
+        "N4-L": 4,
+        "N5": 4
+      }
+    },
+    {
+      "id": "gestao-stakeholders",
+      "nome": "Gestão de stakeholders",
+      "descricao": "Mantém liderança e áreas envolvidas alinhadas e ajusta o discurso para o nível executivo.",
+      "nota_esperada_por_nivel": {
+        "N1": 1,
+        "N2": 2,
+        "N3": 3,
+        "N4-E": 4,
+        "N4-L": 4,
+        "N5": 5
+      }
+    },
+    {
+      "id": "mentoria",
+      "nome": "Mentoria e desenvolvimento de pessoas",
+      "descricao": "Ensina, dá feedback e apoia o crescimento de outras pessoas.",
+      "nota_esperada_por_nivel": {
+        "N1": 0,
+        "N2": 1,
+        "N3": 3,
+        "N4-E": 4,
+        "N4-L": 5,
+        "N5": 5
+      }
+    }
+  ]
+}

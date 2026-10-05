@@ -1,0 +1,58 @@
+import { NavLink, Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom'
+import { useAuth } from './lib/auth'
+import { supabaseConfigured } from './lib/supabase'
+import { hasBasics } from './lib/types'
+import Entrar from './pages/Entrar'
+import Extras from './pages/Extras'
+import MapaSkills from './pages/MapaSkills'
+import Onboarding from './pages/Onboarding'
+import Perfil from './pages/Perfil'
+
+function Layout() {
+  const { session, profile, loading, signOut } = useAuth()
+  const { pathname } = useLocation()
+  if (loading) return <p className="p-8 text-apoio">Carregando…</p>
+  if (!session) return <Navigate to="/entrar" replace />
+  const link = ({ isActive }: { isActive: boolean }) =>
+    `px-3 py-2 rounded-md font-card font-semibold text-sm ${isActive ? 'bg-white text-midnight' : 'text-white/90 hover:text-white'}`
+  return (
+    <div className="min-h-screen">
+      <header className="bg-midnight text-white">
+        <div className="max-w-6xl mx-auto px-4 py-3 flex flex-wrap items-center gap-4">
+          <span className="font-titulo font-extrabold text-xl mr-4">Career Paths</span>
+          <nav className="flex gap-1 flex-wrap">
+            <NavLink to="/" end className={link}>Meu perfil</NavLink>
+            <NavLink to="/cadastro" className={link}>Sobre você</NavLink>
+            <NavLink to="/skills" className={link}>Mapa de skills</NavLink>
+            <NavLink to="/extras" className={link}>Idiomas</NavLink>
+          </nav>
+          <button onClick={signOut} className="ml-auto text-sm text-white/80 hover:text-white">Sair</button>
+        </div>
+      </header>
+      <main className="max-w-6xl mx-auto px-4 py-8">
+        {profile && !hasBasics(profile) && pathname !== '/cadastro'
+          ? <Navigate to="/cadastro" replace />
+          : <Outlet />}
+      </main>
+    </div>
+  )
+}
+
+export default function App() {
+  const { session } = useAuth()
+  if (!supabaseConfigured) {
+    return <p className="p-8">Configure VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY (veja .env.example).</p>
+  }
+  return (
+    <Routes>
+      <Route path="/entrar" element={session ? <Navigate to="/" replace /> : <Entrar />} />
+      <Route element={<Layout />}>
+        <Route index element={<Perfil />} />
+        <Route path="/cadastro" element={<Onboarding />} />
+        <Route path="/skills" element={<MapaSkills />} />
+        <Route path="/extras" element={<Extras />} />
+      </Route>
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  )
+}

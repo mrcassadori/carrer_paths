@@ -1,0 +1,25 @@
+@import "tailwindcss";
+
+/* Linguagem visual do FigJam (README do MVP, seção 6) */
+@theme {
+  --color-midnight: #041E42;
+  --color-apoio: #666666;
+  --color-preparacao: #0762C8;
+  --color-seminario: #33058D;
+  --color-consolidacao: #1C8172;
+  --color-pendencias: #FF6720;
+  --font-titulo: "Nexa Heavy", Arial, sans-serif;
+  --font-card: "Infra SemiBold", Arial, sans-serif;
+  --font-corpo: "Infra Light", Arial, sans-serif;
+}
+
+body {
+  background: #ffffff;
+  color: var(--color-midnight);
+  font-family: var(--font-corpo);
+  font-size: 16px;
+}
+
+h1 { font-family: var(--font-titulo); font-weight: 800; font-size: 40px; line-height: 1.15; }
+h2 { font-family: var(--font-titulo); font-weight: 800; font-size: 30px; line-height: 1.2; }
+h3 { font-family: var(--font-card); font-weight: 600; font-size: 20px; }
