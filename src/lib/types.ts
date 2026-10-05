@@ -54,3 +54,19 @@ export function hasBasics(p: Profile | null): boolean {
       p.hire_date && p.level_since && p.track_id && p.level_id,
   )
 }
+
+export const COURSE_KINDS = [
+  ['curso', 'Curso'],
+  ['certificacao', 'Certificação'],
+  ['graduacao', 'Graduação'],
+  ['pos_graduacao', 'Pós-graduação'],
+  ['outro', 'Outro'],
+] as const
+
+export const ROLE_LABEL: Record<AppRole, string> = {
+  colaborador: 'Colaborador',
+  especialista: 'Especialista',
+  gestor: 'Gestor',
+  lider_pratica: 'Líder da prática',
+  admin: 'Admin',
+}

@@ -2,11 +2,14 @@ import { NavLink, Navigate, Outlet, Route, Routes, useLocation } from 'react-rou
 import { useAuth } from './lib/auth'
 import { supabaseConfigured } from './lib/supabase'
 import { hasBasics } from './lib/types'
+import Adocao from './pages/Adocao'
 import Entrar from './pages/Entrar'
+import Experiencia from './pages/Experiencia'
 import Extras from './pages/Extras'
 import MapaSkills from './pages/MapaSkills'
 import Onboarding from './pages/Onboarding'
 import Perfil from './pages/Perfil'
+import Pessoas from './pages/Pessoas'
 
 function Layout() {
   const { session, profile, loading, signOut } = useAuth()
@@ -24,7 +27,10 @@ function Layout() {
             <NavLink to="/" end className={link}>Meu perfil</NavLink>
             <NavLink to="/cadastro" className={link}>Sobre você</NavLink>
             <NavLink to="/skills" className={link}>Mapa de skills</NavLink>
+            <NavLink to="/experiencia" className={link}>Projetos e cursos</NavLink>
             <NavLink to="/extras" className={link}>Idiomas</NavLink>
+            {profile && profile.app_role !== 'colaborador' && <NavLink to="/adocao" className={link}>Adoção</NavLink>}
+            {profile?.app_role === 'admin' && <NavLink to="/pessoas" className={link}>Pessoas</NavLink>}
           </nav>
           <button onClick={signOut} className="ml-auto text-sm text-white/80 hover:text-white">Sair</button>
         </div>
@@ -51,6 +57,9 @@ export default function App() {
         <Route path="/cadastro" element={<Onboarding />} />
         <Route path="/skills" element={<MapaSkills />} />
         <Route path="/extras" element={<Extras />} />
+        <Route path="/experiencia" element={<Experiencia />} />
+        <Route path="/adocao" element={<Adocao />} />
+        <Route path="/pessoas" element={<Pessoas />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
