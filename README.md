@@ -49,7 +49,7 @@ python3 scripts/gerar_seed.py > supabase/seed-catalogo.sql   # depois rode o arq
 
 ## Testes do banco
 
-`supabase/tests/` aplica o schema e o seed num Postgres 15+ local e roda 17 verificações de permissão e do fluxo de validação. Cada erro esperado aparece logo abaixo do teste correspondente:
+`supabase/tests/` aplica o schema e o seed num Postgres 15+ local e roda as verificações de permissão, do fluxo de validação e do marco 2. Cada erro esperado aparece logo abaixo do teste correspondente:
 
 ```bash
 PSQL="sudo -u postgres psql" bash supabase/tests/rodar.sh
