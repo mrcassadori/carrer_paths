@@ -77,8 +77,8 @@ export default function Onboarding() {
             <Field label="Nome completo">
               <Input required value={form.full_name} onChange={set('full_name')} />
             </Field>
-            <Field label="Seu gestor" hint={managers.length === 0 ? 'A lista de gestores ainda está vazia; avise o líder da prática.' : undefined}>
-              <Select required value={form.manager_id} onChange={set('manager_id')} disabled={locked.manager_id}>
+            <Field label="Seu gestor (opcional)" hint={locked.manager_id ? undefined : 'Se o seu gestor não aparecer, deixe em branco e escolha depois.'}>
+              <Select value={form.manager_id} onChange={set('manager_id')} disabled={locked.manager_id}>
                 <option value="">Selecione</option>
                 {managers.map((m) => <option key={m.id} value={m.id}>{m.full_name || 'Sem nome'}</option>)}
               </Select>
