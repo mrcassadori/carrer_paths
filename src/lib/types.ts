@@ -50,7 +50,7 @@ export const LANGUAGE_LEVELS = [
 
 export function hasBasics(p: Profile | null): boolean {
   return Boolean(
-    p && p.full_name && p.manager_id && p.job_title && p.job_summary &&
+    p && p.full_name && p.job_title && p.job_summary &&
       p.hire_date && p.level_since && p.track_id && p.level_id,
   )
 }
