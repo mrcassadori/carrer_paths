@@ -54,7 +54,7 @@ export default function Perfil() {
   const checklist = [
     { done: o.has_basics, label: 'Sobre você: cargo, descrição, datas, trilha e nível', to: '/cadastro' },
     { done: o.skills_total > 0 && o.skills_self_rated === o.skills_total, label: `Mapa de skills (${o.skills_self_rated} de ${o.skills_total})`, to: '/skills' },
-    { done: o.has_extra, label: 'Pelo menos um item extra (idiomas)', to: '/extras' },
+    { done: o.has_extra, label: 'Pelo menos um projeto, curso ou idioma', to: '/experiencia' },
   ]
 
   return (

@@ -7,7 +7,7 @@ import { LANGUAGE_LEVELS } from '../lib/types'
 
 interface Language { language: string; level: string }
 
-/** Passo 3: idiomas (o "item extra" do cadastro completo). Projetos, cursos e currículo entram nos próximos marcos. */
+/** Idiomas: um dos itens extras do cadastro completo, junto com projetos e cursos. */
 export default function Extras() {
   const { profile } = useAuth()
   const [items, setItems] = useState<Language[]>([])
@@ -68,7 +68,7 @@ export default function Extras() {
         </form>
         <ErrorText>{error}</ErrorText>
       </Card>
-      <p className="text-apoio text-sm mt-4">Em breve: projetos e cases, cursos e certificados, e importação do currículo.</p>
+      <p className="text-apoio text-sm mt-4">Projetos e cursos ficam em <Link className="underline" to="/experiencia">Projetos e cursos</Link>. A importação do currículo vem em breve.</p>
       <Link to="/"><Button className="mt-6">Ver meu perfil</Button></Link>
     </div>
   )
