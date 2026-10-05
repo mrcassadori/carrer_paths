@@ -52,7 +52,7 @@ export default function Perfil() {
   if (!o) return <p className="text-apoio">Carregando…</p>
   const status = STATUS[o.assessment_status ?? 'rascunho']
   const checklist = [
-    { done: o.has_basics, label: 'Sobre você: cargo, descrição, datas, trilha, nível e gestor', to: '/cadastro' },
+    { done: o.has_basics, label: 'Sobre você: cargo, descrição, datas, trilha e nível', to: '/cadastro' },
     { done: o.skills_total > 0 && o.skills_self_rated === o.skills_total, label: `Mapa de skills (${o.skills_self_rated} de ${o.skills_total})`, to: '/skills' },
     { done: o.has_extra, label: 'Pelo menos um item extra (idiomas)', to: '/extras' },
   ]
