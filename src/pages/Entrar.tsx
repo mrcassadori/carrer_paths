@@ -4,65 +4,68 @@ import { Button, ErrorText, Field, Input } from '../components/ui'
 import { readOrigem } from '../lib/origem'
 import { supabase } from '../lib/supabase'
 
-/** Erro que o Supabase devolve no #hash quando um link de e-mail falha (ex.: expirado). */
-function hashError(): string {
-  const params = new URLSearchParams(window.location.hash.slice(1))
-  return params.get('error_code') === 'otp_expired'
-    ? 'Esse link expirou ou já foi usado. Use o código que chega no e-mail.'
-    : params.get('error_description') ?? ''
-}
+type Mode = 'entrar' | 'criar'
 
 /**
- * Entrada por código de 6 dígitos enviado por e-mail. Usamos código em vez de só o link
- * porque a segurança do e-mail corporativo costuma abrir o link antes da pessoa e invalidá-lo.
+ * Entrada por e-mail e senha, sem confirmação por e-mail (desligada no Supabase).
+ * O domínio corporativo continua sendo checado pelo hook before-user-created.
  */
 export default function Entrar() {
   const navigate = useNavigate()
+  const [mode, setMode] = useState<Mode>('entrar')
+  const [name, setName] = useState('')
   const [email, setEmail] = useState('')
-  const [code, setCode] = useState('')
-  const [sent, setSent] = useState(false)
-  const [error, setError] = useState(hashError)
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
 
-  async function sendCode(e?: FormEvent) {
-    e?.preventDefault()
-    setBusy(true)
+  function switchMode(next: Mode) {
+    setMode(next)
     setError('')
-    const { error } = await supabase.auth.signInWithOtp({
-      email: email.trim().toLowerCase(),
-      options: {
-        emailRedirectTo: window.location.origin,
-        data: { origem: readOrigem() }, // usado só no primeiro cadastro
-      },
-    })
-    setBusy(false)
-    if (error) {
-      setError(error.message.includes('corporativo')
-        ? error.message
-        : error.status === 429
-          ? 'Muitas tentativas seguidas. Espere um minuto e tente de novo.'
-          : 'Não foi possível enviar o código. Confira se é o seu e-mail corporativo e tente de novo.')
-      return
-    }
-    setSent(true)
   }
 
-  async function verify(e: FormEvent) {
+  async function submit(e: FormEvent) {
     e.preventDefault()
     setBusy(true)
     setError('')
-    const { error } = await supabase.auth.verifyOtp({
-      email: email.trim().toLowerCase(),
-      token: code.replace(/\D/g, ''),
-      type: 'email',
-    })
+    const cleanEmail = email.trim().toLowerCase()
+
+    if (mode === 'criar') {
+      const { data, error } = await supabase.auth.signUp({
+        email: cleanEmail,
+        password,
+        options: { data: { full_name: name.trim(), origem: readOrigem() } },
+      })
+      setBusy(false)
+      if (error) {
+        const msg = error.message.toLowerCase()
+        setError(error.message.includes('corporativo')
+          ? error.message
+          : msg.includes('already registered')
+            ? 'Esse e-mail já tem conta. Use "Já tenho conta" para entrar.'
+            : msg.includes('password')
+              ? 'A senha precisa ter pelo menos 8 caracteres.'
+              : 'Não foi possível criar a conta. Confira se é o seu e-mail corporativo e tente de novo.')
+        return
+      }
+      if (!data.session) {
+        setError('Conta criada, mas o acesso ainda pede confirmação por e-mail. Avise o Massao.')
+        return
+      }
+      navigate('/', { replace: true })
+      return
+    }
+
+    const { error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password })
     setBusy(false)
     if (error) {
-      setError('Código inválido ou expirado. Confira os números ou peça um código novo.')
+      setError('E-mail ou senha incorretos. Se ainda não tem conta, use "Criar conta".')
       return
     }
     navigate('/', { replace: true })
   }
+
+  const criando = mode === 'criar'
 
   return (
     <main className="min-h-screen flex items-center justify-center px-4">
@@ -73,38 +76,38 @@ export default function Entrar() {
           Registre seu cargo, projetos, cursos, idiomas e seu mapa de skills. Serve para o seu PDI e para dar
           visibilidade aos pontos fortes do time. Não é avaliação de desempenho.
         </p>
-        {sent ? (
-          <form onSubmit={verify} className="space-y-4">
-            <p>Enviamos um código para <strong>{email}</strong>. Ele vale por 1 hora.</p>
-            <Field label="Código do e-mail">
-              <Input inputMode="numeric" autoComplete="one-time-code" required autoFocus
-                value={code} onChange={(e) => setCode(e.target.value)} placeholder="123456" />
+
+        <div className="flex gap-6 mb-6 border-b border-midnight/10">
+          {(['entrar', 'criar'] as const).map((m) => (
+            <button key={m} type="button" onClick={() => switchMode(m)}
+              className={`pb-2 font-card font-semibold -mb-px border-b-2 ${mode === m
+                ? 'border-preparacao text-midnight'
+                : 'border-transparent text-apoio'}`}>
+              {m === 'entrar' ? 'Já tenho conta' : 'Criar conta'}
+            </button>
+          ))}
+        </div>
+
+        <form onSubmit={submit} className="space-y-4">
+          {criando && (
+            <Field label="Nome completo">
+              <Input required autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} />
             </Field>
-            <ErrorText>{error}</ErrorText>
-            <Button type="submit" disabled={busy || code.replace(/\D/g, '').length < 6} className="w-full">
-              {busy ? 'Entrando…' : 'Entrar'}
-            </Button>
-            <div className="flex justify-between text-sm">
-              <button type="button" className="underline text-apoio" onClick={() => { setSent(false); setCode('') }}>
-                Trocar e-mail
-              </button>
-              <button type="button" className="underline text-apoio" disabled={busy} onClick={() => sendCode()}>
-                Reenviar código
-              </button>
-            </div>
-          </form>
-        ) : (
-          <form onSubmit={sendCode} className="space-y-4">
-            <Field label="E-mail corporativo">
-              <Input type="email" required autoComplete="email" value={email}
-                onChange={(e) => setEmail(e.target.value)} placeholder="nome@empresa.com" />
-            </Field>
-            <ErrorText>{error}</ErrorText>
-            <Button type="submit" disabled={busy} className="w-full">
-              {busy ? 'Enviando…' : 'Receber código de acesso'}
-            </Button>
-          </form>
-        )}
+          )}
+          <Field label="E-mail corporativo">
+            <Input type="email" required autoComplete="email" value={email}
+              onChange={(e) => setEmail(e.target.value)} placeholder="nome@stefanini.com" />
+          </Field>
+          <Field label={criando ? 'Crie uma senha (mínimo 8 caracteres)' : 'Senha'}>
+            <Input type="password" required minLength={criando ? 8 : undefined}
+              autoComplete={criando ? 'new-password' : 'current-password'}
+              value={password} onChange={(e) => setPassword(e.target.value)} />
+          </Field>
+          <ErrorText>{error}</ErrorText>
+          <Button type="submit" disabled={busy} className="w-full">
+            {busy ? 'Aguarde…' : criando ? 'Criar conta' : 'Entrar'}
+          </Button>
+        </form>
       </div>
     </main>
   )
