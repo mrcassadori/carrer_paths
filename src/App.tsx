@@ -3,6 +3,7 @@ import { useAuth } from './lib/auth'
 import { supabaseConfigured } from './lib/supabase'
 import { hasBasics } from './lib/types'
 import Adocao from './pages/Adocao'
+import Curriculo from './pages/Curriculo'
 import Entrar from './pages/Entrar'
 import Experiencia from './pages/Experiencia'
 import Extras from './pages/Extras'
@@ -28,6 +29,7 @@ function Layout() {
             <NavLink to="/cadastro" className={link}>Sobre você</NavLink>
             <NavLink to="/skills" className={link}>Mapa de skills</NavLink>
             <NavLink to="/experiencia" className={link}>Projetos e cursos</NavLink>
+            <NavLink to="/curriculo" className={link}>Currículo</NavLink>
             <NavLink to="/extras" className={link}>Idiomas</NavLink>
             {profile && profile.app_role !== 'colaborador' && <NavLink to="/adocao" className={link}>Adoção</NavLink>}
             {profile?.app_role === 'admin' && <NavLink to="/pessoas" className={link}>Pessoas</NavLink>}
@@ -58,6 +60,7 @@ export default function App() {
         <Route path="/skills" element={<MapaSkills />} />
         <Route path="/extras" element={<Extras />} />
         <Route path="/experiencia" element={<Experiencia />} />
+        <Route path="/curriculo" element={<Curriculo />} />
         <Route path="/adocao" element={<Adocao />} />
         <Route path="/pessoas" element={<Pessoas />} />
       </Route>

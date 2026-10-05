@@ -27,6 +27,13 @@ Stack: React + Vite + TypeScript + Tailwind, Supabase (banco, login por link má
    update profiles set app_role = 'gestor' where email in ('gestor1@empresa.com', 'gestor2@empresa.com');
    ```
 
+## Importação de currículo (Edge Function)
+
+1. Edge Functions > Deploy a new function > Via editor: nome `ler-curriculo`, cole `supabase/functions/ler-curriculo/index.ts` e publique (deixe "Verify JWT" ligado).
+2. Edge Functions > Secrets: crie `ANTHROPIC_API_KEY` com uma chave do console.anthropic.com.
+
+O arquivo vai para o bucket privado `resumes` e é apagado quando a pessoa aplica ou descarta as sugestões. A IA só sugere cargo, descrição, projetos, cursos e idiomas; nunca notas.
+
 ## Rodar localmente
 
 ```bash

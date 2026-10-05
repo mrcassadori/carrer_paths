@@ -11,3 +11,4 @@ $PSQL -q -v ON_ERROR_STOP=1 -d cp < ../migrations/0001_schema.sql
 $PSQL -q -v ON_ERROR_STOP=1 -d cp < ../seed-catalogo.sql
 $PSQL -q -d cp < 10-permissoes-e-fluxo.sql
 $PSQL -q -d cp < 20-marco2.sql
+$PSQL -q -d cp < 30-marco3.sql

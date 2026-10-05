@@ -68,7 +68,7 @@ export default function Extras() {
         </form>
         <ErrorText>{error}</ErrorText>
       </Card>
-      <p className="text-apoio text-sm mt-4">Projetos e cursos ficam em <Link className="underline" to="/experiencia">Projetos e cursos</Link>. A importação do currículo vem em breve.</p>
+      <p className="text-apoio text-sm mt-4">Projetos e cursos ficam em <Link className="underline" to="/experiencia">Projetos e cursos</Link>. Também dá para <Link className="underline" to="/curriculo">importar do currículo</Link>.</p>
       <Link to="/"><Button className="mt-6">Ver meu perfil</Button></Link>
     </div>
   )
