@@ -56,8 +56,8 @@ export default function App() {
         <Route path="/skills" element={<MapaSkills />} />
         <Route path="/projetos" element={<Projetos />} />
         <Route path="/experiencia" element={<Navigate to="/projetos" replace />} />
-        <Route path="/extras" element={<Navigate to="/#curriculo" replace />} />
-        <Route path="/curriculo" element={<Navigate to="/#curriculo" replace />} />
+        <Route path="/extras" element={<Navigate to="/cadastro#curriculo" replace />} />
+        <Route path="/curriculo" element={<Navigate to="/cadastro#curriculo" replace />} />
         <Route path="/adocao" element={<Adocao />} />
         <Route path="/pessoas" element={<Pessoas />} />
       </Route>

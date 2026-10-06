@@ -40,7 +40,7 @@ function periodo(start: string | null, end: string | null) {
   return `${start ? fmt(start) : '?'} – ${end ? fmt(end) : 'atual'}`
 }
 
-/** Projetos e cases: as evidências que sustentam as notas do mapa de skills. Carreira, cursos e idiomas ficam em Meu perfil. */
+/** Projetos e cases: as evidências que sustentam as notas do mapa de skills. Experiência, formação, cursos e idiomas ficam em Sobre você. */
 export default function Projetos() {
   const { profile } = useAuth()
   const profileId = profile?.id

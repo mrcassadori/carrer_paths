@@ -32,7 +32,7 @@ Stack: React + Vite + TypeScript + Tailwind, Supabase (banco, login por link má
 1. Edge Functions > Deploy a new function > Via editor: nome `ler-curriculo`, cole `supabase/functions/ler-curriculo/index.ts` e publique (deixe "Verify JWT" ligado).
 2. Edge Functions > Secrets: crie `ANTHROPIC_API_KEY` com uma chave do console.anthropic.com.
 
-O arquivo vai para o bucket privado `resumes`; fica só o mais recente, visível para a pessoa, o gestor direto, o líder da prática e o admin (migration 0002). A leitura preenche, dentro de Meu perfil, carreira (tabela `career_entries`, migration 0003), formações, cursos, idiomas e, se estiverem vazios, cargo e descrição; nunca notas nem projetos.
+O arquivo vai para o bucket privado `resumes`; fica só o mais recente, visível para a pessoa, o gestor direto, o líder da prática e o admin (migration 0002). A leitura preenche, no final de Sobre você, a experiência (tabela `career_entries`, migration 0003), formações, cursos, idiomas e, se estiverem vazios, cargo e descrição; nunca notas nem projetos.
 
 ## Rodar localmente
 

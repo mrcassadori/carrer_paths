@@ -208,10 +208,10 @@ function CourseSection({ title, tone, kinds, addLabel, courses, onChanged, setEr
 }
 
 /**
- * Currículo dentro de Meu perfil: o arquivo mais recente fica guardado; a leitura por IA preenche carreira,
+ * Currículo no final de Sobre você: o arquivo mais recente fica guardado; a leitura por IA preenche experiência (empresas),
  * formações, cursos e idiomas, e a pessoa edita ou exclui o que quiser. Notas de skill nunca vêm do currículo.
  */
-export default function MeuCurriculo({ onChanged }: { onChanged: () => void }) {
+export default function MeuCurriculo() {
   const { profile, reloadProfile } = useAuth()
   const profileId = profile?.id
   const [file, setFile] = useState<ResumeFile | null>(null)
@@ -243,7 +243,7 @@ export default function MeuCurriculo({ onChanged }: { onChanged: () => void }) {
   }, [profileId])
   useEffect(() => { void load() }, [load])
 
-  const changed = useCallback(() => { void load(); onChanged() }, [load, onChanged])
+  const changed = useCallback(() => { void load() }, [load])
 
   /** Grava o que a IA leu, sem duplicar o que já existe. Cargo e descrição só entram se estiverem vazios. */
   async function saveExtracted(x: Extracted) {
@@ -310,7 +310,7 @@ export default function MeuCurriculo({ onChanged }: { onChanged: () => void }) {
     await reloadProfile()
     changed()
     setBusy('')
-    setNotice(`Currículo lido. Entraram ${added.career} empresas, ${added.courses} cursos e formações e ${added.languages} idiomas. ` +
+    setNotice(`Currículo lido. Entraram ${added.career} experiências, ${added.courses} cursos e formações e ${added.languages} idiomas. ` +
       'Confira abaixo; edite ou exclua o que não estiver certo.')
   }
 
@@ -321,7 +321,7 @@ export default function MeuCurriculo({ onChanged }: { onChanged: () => void }) {
   }
 
   async function removeFile() {
-    if (!file || !window.confirm('Excluir o arquivo do currículo? Carreira, formações, cursos e idiomas continuam no perfil.')) return
+    if (!file || !window.confirm('Excluir o arquivo do currículo? Experiência, formação, cursos e idiomas continuam no perfil.')) return
     await supabase.storage.from('resumes').remove([file.storage_path])
     await supabase.from('resume_imports').delete().eq('id', file.id)
     changed()
@@ -379,7 +379,7 @@ export default function MeuCurriculo({ onChanged }: { onChanged: () => void }) {
       <div>
         <h2 className="mb-1">Currículo</h2>
         <p className="text-apoio">
-          Envie seu currículo e a plataforma preenche carreira, formações, cursos e idiomas. Depois é só editar ou
+          Envie seu currículo e a plataforma preenche experiência, formação, cursos e idiomas. Depois é só editar ou
           excluir o que precisar. As notas do mapa de skills continuam sendo só suas.
         </p>
       </div>
@@ -410,7 +410,7 @@ export default function MeuCurriculo({ onChanged }: { onChanged: () => void }) {
       {notice && <p role="status" className="text-sm bg-consolidacao/10 border-l-4 border-consolidacao px-3 py-2 rounded">{notice}</p>}
       <ErrorText>{error}</ErrorText>
 
-      <Card title="Carreira" tone="preparacao">
+      <Card title="Experiência" tone="preparacao">
         {career.length === 0 && !addingCareer && <p className="text-sm text-apoio mb-4">Nenhuma empresa cadastrada ainda.</p>}
         {career.length > 0 && (
           <ul className="divide-y divide-midnight/10 mb-4">
@@ -451,12 +451,10 @@ export default function MeuCurriculo({ onChanged }: { onChanged: () => void }) {
         )}
       </Card>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <CourseSection title="Formações" tone="seminario" kinds={FORMACAO} addLabel="Adicionar formação"
-          courses={courses} onChanged={changed} setError={setError} />
-        <CourseSection title="Cursos e certificações" tone="seminario" kinds={CURSO} addLabel="Adicionar curso"
-          courses={courses} onChanged={changed} setError={setError} />
-      </div>
+      <CourseSection title="Formação" tone="seminario" kinds={FORMACAO} addLabel="Adicionar formação"
+        courses={courses} onChanged={changed} setError={setError} />
+      <CourseSection title="Cursos e certificações" tone="seminario" kinds={CURSO} addLabel="Adicionar curso"
+        courses={courses} onChanged={changed} setError={setError} />
 
       <Card title="Idiomas" tone="consolidacao">
         {languages.length > 0 && (
