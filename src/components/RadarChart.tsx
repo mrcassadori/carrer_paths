@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useI18n } from '../lib/i18n'
 
 export interface RadarSeries {
   name: string
@@ -20,15 +21,16 @@ const point = (i: number, n: number, v: number) => {
 
 /** Gráfico aranha 0–5 por categoria, com legenda, dica ao passar o mouse e tabela com os números. */
 export default function RadarChart({ axes, series, title }: { axes: string[]; series: RadarSeries[]; title: string }) {
+  const { t, dateLocale } = useI18n()
   const [hover, setHover] = useState<{ s: number; i: number } | null>(null)
   const n = axes.length
   if (n < 3) return null
 
-  const fmt = (v: number | null) => (v === null ? '–' : v.toFixed(1).replace('.', ','))
+  const fmt = (v: number | null) => (v === null ? '–' : v.toLocaleString(dateLocale, { minimumFractionDigits: 1, maximumFractionDigits: 1 }))
 
   return (
     <figure className="m-0">
-      <ul className="flex flex-wrap gap-4 text-sm mb-2" aria-label="Legenda">
+      <ul className="flex flex-wrap gap-4 text-sm mb-2" aria-label={t('Legenda')}>
         {series.map((s) => (
           <li key={s.name} className="flex items-center gap-2">
             <svg width="28" height="12" aria-hidden>
@@ -99,11 +101,11 @@ export default function RadarChart({ axes, series, title }: { axes: string[]; se
         })()}
       </svg>
       <details className="mt-2 text-sm">
-        <summary className="cursor-pointer text-apoio">Ver os números</summary>
+        <summary className="cursor-pointer text-apoio">{t('Ver os números')}</summary>
         <table className="w-full mt-2">
           <thead>
             <tr className="text-left text-apoio">
-              <th className="py-1">Categoria</th>
+              <th className="py-1">{t('Categoria')}</th>
               {series.map((s) => <th key={s.name} className="text-right">{s.name}</th>)}
             </tr>
           </thead>

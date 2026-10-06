@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button, ErrorText, Field, Input } from '../components/ui'
+import { LanguageSwitcher, useI18n } from '../lib/i18n'
 import { readOrigem } from '../lib/origem'
 import { supabase } from '../lib/supabase'
 
@@ -11,6 +12,7 @@ type Mode = 'entrar' | 'criar'
  * O domínio corporativo continua sendo checado pelo hook before-user-created.
  */
 export default function Entrar() {
+  const { t } = useI18n()
   const navigate = useNavigate()
   const [mode, setMode] = useState<Mode>('entrar')
   const [name, setName] = useState('')
@@ -70,11 +72,13 @@ export default function Entrar() {
   return (
     <main className="min-h-screen flex items-center justify-center px-4">
       <div className="w-full max-w-md">
-        <p className="font-card text-sm text-preparacao uppercase tracking-wide">Design & Produto</p>
+        <div className="flex items-center justify-between gap-4">
+          <p className="font-card text-sm text-preparacao uppercase tracking-wide">{t('Design & Produto')}</p>
+          <LanguageSwitcher />
+        </div>
         <h1 className="mb-2">Career Paths</h1>
         <p className="text-apoio mb-8">
-          Registre seu cargo, projetos, cursos, idiomas e seu mapa de skills. Serve para o seu PDI e para dar
-          visibilidade aos pontos fortes do time. Não é avaliação de desempenho.
+          {t('Registre seu cargo, projetos, cursos, idiomas e seu mapa de skills. Serve para o seu PDI e para dar visibilidade aos pontos fortes do time. Não é avaliação de desempenho.')}
         </p>
 
         <div className="flex gap-6 mb-6 border-b border-midnight/10">
@@ -83,29 +87,29 @@ export default function Entrar() {
               className={`pb-2 font-card font-semibold -mb-px border-b-2 ${mode === m
                 ? 'border-preparacao text-midnight'
                 : 'border-transparent text-apoio'}`}>
-              {m === 'entrar' ? 'Já tenho conta' : 'Criar conta'}
+              {m === 'entrar' ? t('Já tenho conta') : t('Criar conta')}
             </button>
           ))}
         </div>
 
         <form onSubmit={submit} className="space-y-4">
           {criando && (
-            <Field label="Nome completo">
+            <Field label={t('Nome completo')}>
               <Input required autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} />
             </Field>
           )}
-          <Field label="E-mail corporativo">
+          <Field label={t('E-mail corporativo')}>
             <Input type="email" required autoComplete="email" value={email}
-              onChange={(e) => setEmail(e.target.value)} placeholder="nome@stefanini.com" />
+              onChange={(e) => setEmail(e.target.value)} placeholder={t('nome@stefanini.com')} />
           </Field>
-          <Field label={criando ? 'Crie uma senha (mínimo 8 caracteres)' : 'Senha'}>
+          <Field label={criando ? t('Crie uma senha (mínimo 8 caracteres)') : t('Senha')}>
             <Input type="password" required minLength={criando ? 8 : undefined}
               autoComplete={criando ? 'new-password' : 'current-password'}
               value={password} onChange={(e) => setPassword(e.target.value)} />
           </Field>
-          <ErrorText>{error}</ErrorText>
+          <ErrorText>{t(error)}</ErrorText>
           <Button type="submit" disabled={busy} className="w-full">
-            {busy ? 'Aguarde…' : criando ? 'Criar conta' : 'Entrar'}
+            {busy ? t('Aguarde…') : criando ? t('Criar conta') : t('Entrar')}
           </Button>
         </form>
       </div>

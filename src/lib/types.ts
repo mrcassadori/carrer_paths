@@ -74,7 +74,7 @@ export const ROLE_LABEL: Record<AppRole, string> = {
 }
 
 export const ASSESSMENT_STATUS: Record<string, { label: string; tone: 'preparacao' | 'seminario' | 'consolidacao' | 'pendencias' }> = {
-  rascunho: { label: 'Autoavaliação em andamento', tone: 'preparacao' },
+  rascunho: { label: 'Não enviado para avaliação', tone: 'pendencias' },
   enviada: { label: 'Enviada para o líder', tone: 'seminario' },
   em_revisao: { label: 'Em avaliação pelo líder', tone: 'seminario' },
   validada: { label: 'Avaliada pelo líder', tone: 'consolidacao' },

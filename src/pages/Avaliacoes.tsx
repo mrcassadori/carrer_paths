@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ErrorText, Input, Tag } from '../components/ui'
 import { useAuth } from '../lib/auth'
+import { useI18n } from '../lib/i18n'
 import { supabase } from '../lib/supabase'
 import { ASSESSMENT_STATUS } from '../lib/types'
 
@@ -23,6 +24,7 @@ const ORDER: Record<string, number> = { enviada: 0, em_revisao: 1, contestada: 2
 /** Líder da prática e admin: lista de pessoas da prática para avaliar. */
 export default function Avaliacoes() {
   const { profile } = useAuth()
+  const { t } = useI18n()
   const [people, setPeople] = useState<Person[]>([])
   const [query, setQuery] = useState('')
   const [error, setError] = useState('')
@@ -33,10 +35,10 @@ export default function Avaliacoes() {
       .select('id, full_name, email, job_title, track_name, level_name, assessment_status, skills_self_rated, skills_total')
       .neq('id', profile.id)
       .then(({ data, error }) => {
-        if (error) setError(error.message)
+        if (error) setError(t(error.message))
         setPeople(data ?? [])
       })
-  }, [profile])
+  }, [profile, t])
 
   const shown = useMemo(() => {
     const q = query.trim().toLowerCase()
@@ -47,7 +49,7 @@ export default function Avaliacoes() {
   }, [people, query])
 
   if (profile && !['lider_pratica', 'admin'].includes(profile.app_role)) {
-    return <p className="text-apoio">Esta tela é para o líder da prática.</p>
+    return <p className="text-apoio">{t('Esta tela é para o líder da prática.')}</p>
   }
 
   const waiting = people.filter((p) => p.assessment_status === 'enviada' || p.assessment_status === 'em_revisao').length
@@ -55,14 +57,14 @@ export default function Avaliacoes() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="mb-2">Avaliações</h1>
+        <h1 className="mb-2">{t('Avaliações')}</h1>
         <p className="text-apoio">
-          Abra uma pessoa para ver o currículo, os projetos e o mapa de skills. Sua nota fica ao lado da nota que ela deu,
-          sem substituí-la. {waiting > 0 && <strong>{waiting} esperando sua avaliação.</strong>}
+          {t('Abra uma pessoa para ver o currículo, os projetos e o mapa de skills. Sua nota fica ao lado da nota que ela deu, sem substituí-la.')}
+          {' '}{waiting > 0 && <strong>{t('{n} esperando sua avaliação.', { n: waiting })}</strong>}
         </p>
       </div>
       <div className="w-full sm:w-80">
-        <Input placeholder="Buscar por nome ou e-mail" value={query} onChange={(e) => setQuery(e.target.value)} />
+        <Input placeholder={t('Buscar por nome ou e-mail')} value={query} onChange={(e) => setQuery(e.target.value)} />
       </div>
       <ErrorText>{error}</ErrorText>
 
@@ -70,9 +72,9 @@ export default function Avaliacoes() {
         <table className="w-full text-sm">
           <thead>
             <tr className="text-left text-apoio border-b border-midnight/10">
-              <th className="p-3">Pessoa</th>
-              <th className="p-3">Cargo · trilha · nível</th>
-              <th className="p-3">Situação</th>
+              <th className="p-3">{t('Pessoa')}</th>
+              <th className="p-3">{t('Cargo · trilha · nível')}</th>
+              <th className="p-3">{t('Situação')}</th>
             </tr>
           </thead>
           <tbody>
@@ -81,21 +83,25 @@ export default function Avaliacoes() {
               return (
                 <tr key={p.id} className="border-t border-midnight/10 align-top">
                   <td className="p-3">
-                    <Link to={`/avaliacoes/${p.id}`} className="font-card font-semibold underline">{p.full_name || 'Sem nome'}</Link>
+                    <Link to={`/avaliacoes/${p.id}`} className="font-card font-semibold underline">{p.full_name || t('Sem nome')}</Link>
                     <p className="text-apoio">{p.email}</p>
                   </td>
-                  <td className="p-3">{[p.job_title, p.track_name, p.level_name].filter(Boolean).join(' · ') || '–'}</td>
+                  <td className="p-3">{[p.job_title, t(p.track_name), t(p.level_name)].filter(Boolean).join(' · ') || '–'}</td>
                   <td className="p-3">
-                    <Tag tone={st.tone}>{st.label}</Tag>
-                    {p.assessment_status === 'rascunho' && p.skills_total > 0 && (
-                      <p className="text-apoio mt-1">{p.skills_self_rated} de {p.skills_total} skills com nota</p>
+                    <Tag tone={st.tone}>{t(st.label)}</Tag>
+                    {(p.assessment_status ?? 'rascunho') === 'rascunho' && (
+                      <p className="text-apoio mt-1">
+                        {p.skills_total > 0 && p.skills_self_rated === p.skills_total
+                          ? t('Mapa completo; falta a pessoa clicar em Enviar')
+                          : t('Mapa de skills: {a} de {b} com nota', { a: p.skills_self_rated, b: p.skills_total })}
+                      </p>
                     )}
                   </td>
                 </tr>
               )
             })}
             {shown.length === 0 && (
-              <tr><td colSpan={3} className="p-3 text-apoio">Ninguém da sua prática se cadastrou ainda.</td></tr>
+              <tr><td colSpan={3} className="p-3 text-apoio">{t('Ninguém da sua prática se cadastrou ainda.')}</td></tr>
             )}
           </tbody>
         </table>

@@ -2,6 +2,7 @@ import { FunctionsHttpError } from '@supabase/supabase-js'
 import { useCallback, useEffect, useState } from 'react'
 import { Button, Card, ErrorText } from './ui'
 import { supabase } from '../lib/supabase'
+import { useI18n } from '../lib/i18n'
 
 interface Item { titulo: string; detalhe: string }
 interface Content { resumo: string; pontos_fortes: Item[]; pontos_de_atencao: Item[]; sugestoes_pdi: Item[] }
@@ -18,6 +19,7 @@ const SECTIONS: { key: keyof Omit<Content, 'resumo'>; title: string; bar: string
  * gestor, líder e admin só leem a mais recente. Nunca muda nota.
  */
 export default function AnaliseIA({ profileId, canGenerate }: { profileId: string; canGenerate: boolean }) {
+  const { t, locale, dateLocale } = useI18n()
   const [analysis, setAnalysis] = useState<Analysis | null>(null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
@@ -32,11 +34,11 @@ export default function AnaliseIA({ profileId, canGenerate }: { profileId: strin
   async function generate() {
     setBusy(true)
     setError('')
-    const { data, error } = await supabase.functions.invoke('analisar-perfil', { body: {} })
+    const { data, error } = await supabase.functions.invoke('analisar-perfil', { body: { locale } })
     setBusy(false)
     if (error) {
       const body = error instanceof FunctionsHttpError ? await error.context.json().catch(() => null) : null
-      setError(body?.error ?? `Não foi possível gerar a análise. Tente de novo. (${error.message})`)
+      setError(body?.error ? t(body.error) : t('Não foi possível gerar a análise. Tente de novo. ({erro})', { erro: error.message }))
       return
     }
     setAnalysis(data.analysis)
@@ -44,18 +46,18 @@ export default function AnaliseIA({ profileId, canGenerate }: { profileId: strin
 
   const c = analysis?.content
   return (
-    <Card tone="seminario" title="Análise do seu perfil por IA">
+    <Card tone="seminario" title={t('Análise do seu perfil por IA')}>
       <p className="text-sm text-apoio mb-4">
         {canGenerate
-          ? 'A IA cruza seu cargo, currículo, mapa de skills e projetos e aponta pontos fortes, pontos de atenção e ideias para o PDI. Ela não muda nenhuma nota.'
-          : 'Análise gerada pela própria pessoa. A IA cruza cargo, currículo, mapa de skills e projetos; não muda nenhuma nota.'}
+          ? t('A IA cruza seu cargo, currículo, mapa de skills e projetos e aponta pontos fortes, pontos de atenção e ideias para o PDI. Ela não muda nenhuma nota.')
+          : t('Análise gerada pela própria pessoa. A IA cruza cargo, currículo, mapa de skills e projetos; não muda nenhuma nota.')}
       </p>
       {c ? (
         <div className="space-y-5">
           <p className="text-sm">{c.resumo}</p>
           {SECTIONS.map((s) => c[s.key]?.length > 0 && (
             <div key={s.key}>
-              <p className="font-card font-semibold mb-2">{s.title}</p>
+              <p className="font-card font-semibold mb-2">{t(s.title)}</p>
               <ul className="space-y-2">
                 {c[s.key].map((it, i) => (
                   <li key={i} className={`border-l-4 ${s.bar} pl-3 text-sm`}>
@@ -66,18 +68,18 @@ export default function AnaliseIA({ profileId, canGenerate }: { profileId: strin
               </ul>
             </div>
           ))}
-          <p className="text-xs text-apoio">Gerada em {new Date(analysis!.created_at).toLocaleString('pt-BR')}. Confira antes de usar; a IA pode errar.</p>
+          <p className="text-xs text-apoio">{t('Gerada em {data}. Confira antes de usar; a IA pode errar.', { data: new Date(analysis!.created_at).toLocaleString(dateLocale) })}</p>
         </div>
       ) : (
-        !canGenerate && <p className="text-sm text-apoio">A pessoa ainda não gerou uma análise.</p>
+        !canGenerate && <p className="text-sm text-apoio">{t('A pessoa ainda não gerou uma análise.')}</p>
       )}
       <ErrorText>{error}</ErrorText>
       {canGenerate && (
         <div className="mt-4 flex items-center gap-3">
           <Button type="button" onClick={generate} disabled={busy}>
-            {busy ? 'Analisando…' : c ? 'Atualizar análise' : 'Gerar análise'}
+            {busy ? t('Analisando…') : c ? t('Atualizar análise') : t('Gerar análise')}
           </Button>
-          {busy && <span className="text-sm text-apoio">Isso leva menos de um minuto.</span>}
+          {busy && <span className="text-sm text-apoio">{t('Isso leva menos de um minuto.')}</span>}
         </div>
       )}
     </Card>

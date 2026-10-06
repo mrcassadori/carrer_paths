@@ -4,6 +4,7 @@ import AnaliseIA from '../components/AnaliseIA'
 import RadarChart, { averagesByCategory, type RadarSeries } from '../components/RadarChart'
 import { Card, Tag } from '../components/ui'
 import { useAuth } from '../lib/auth'
+import { useI18n } from '../lib/i18n'
 import { supabase } from '../lib/supabase'
 import { tempoDesde } from '../lib/time'
 import { ASSESSMENT_STATUS } from '../lib/types'
@@ -27,6 +28,7 @@ interface Gap { category_name: string; kind: string; self_score: number | null; 
 /** Resumo do perfil, checklist do cadastro completo, gráfico aranha das hard skills e análise por IA. */
 export default function Perfil() {
   const { profile } = useAuth()
+  const { t, locale } = useI18n()
   const [o, setO] = useState<Overview | null>(null)
   const [gaps, setGaps] = useState<Gap[]>([])
   const [order, setOrder] = useState<Record<string, number>>({})
@@ -45,37 +47,48 @@ export default function Perfil() {
     const axes = [...new Set(hard.map((g) => g.category_name))].sort((a, b) => (order[a] ?? 0) - (order[b] ?? 0))
     const cat = (g: Gap) => g.category_name
     const series: RadarSeries[] = [
-      { name: 'Sua nota', color: '#0762C8', values: averagesByCategory(hard, cat, (g) => g.self_score, axes) },
-      { name: 'Esperado no seu nível', color: '#666666', dashed: true, values: averagesByCategory(hard, cat, (g) => g.expected_now, axes) },
+      { name: t('Sua nota'), color: '#0762C8', values: averagesByCategory(hard, cat, (g) => g.self_score, axes) },
+      { name: t('Esperado no seu nível'), color: '#666666', dashed: true, values: averagesByCategory(hard, cat, (g) => g.expected_now, axes) },
     ]
     if (hard.some((g) => g.validated_score !== null)) {
-      series.push({ name: 'Líder', color: '#FF6720', marker: 'square', values: averagesByCategory(hard, cat, (g) => g.validated_score, axes) })
+      series.push({ name: t('Líder'), color: '#FF6720', marker: 'square', values: averagesByCategory(hard, cat, (g) => g.validated_score, axes) })
     }
     return { axes, series, rated: hard.some((g) => g.self_score !== null) }
-  }, [gaps, order])
+  }, [gaps, order, t])
 
-  if (!o) return <p className="text-apoio">Carregando…</p>
+  if (!o) return <p className="text-apoio">{t('Carregando…')}</p>
   const status = ASSESSMENT_STATUS[o.assessment_status ?? 'rascunho']
   const checklist = [
-    { done: o.has_basics, label: 'Sobre você: cargo, descrição, datas, trilha e nível', to: '/cadastro' },
-    { done: o.skills_total > 0 && o.skills_self_rated === o.skills_total, label: `Mapa de skills (${o.skills_self_rated} de ${o.skills_total})`, to: '/skills' },
-    { done: o.has_extra, label: 'Currículo, experiência, formação, curso, idioma ou projeto', to: '/cadastro#curriculo' },
+    { done: o.has_basics, label: t('Sobre você: cargo, descrição, datas, trilha e nível'), to: '/cadastro' },
+    { done: o.skills_total > 0 && o.skills_self_rated === o.skills_total, label: t('Mapa de skills ({a} de {b})', { a: o.skills_self_rated, b: o.skills_total }), to: '/skills' },
+    { done: o.has_extra, label: t('Currículo, experiência, formação, curso, idioma ou projeto'), to: '/cadastro#curriculo' },
   ]
 
   return (
     <div className="space-y-6">
       <div>
         <h1>{profile?.full_name}</h1>
-        <p className="text-apoio">{o.job_title} · {o.track_name} · {o.level_name}</p>
+        <p className="text-apoio">{o.job_title} · {t(o.track_name)} · {t(o.level_name)}</p>
       </div>
+
+      {(o.assessment_status ?? 'rascunho') === 'rascunho' && o.skills_total > 0 && (
+        <Card tone="pendencias" title={t('Seu mapa de skills ainda não foi enviado ao líder')}>
+          <p className="text-sm mb-3">
+            {o.skills_self_rated === o.skills_total
+              ? t('Você já deu nota em todas as skills. Falta clicar em "Enviar para o líder" no fim do Mapa de skills; só depois disso o líder da prática consegue avaliar.')
+              : t('Você deu nota em {a} de {b} skills. Quando terminar, clique em "Enviar para o líder" no fim do Mapa de skills.', { a: o.skills_self_rated, b: o.skills_total })}
+          </p>
+          <Link to="/skills" className="underline font-card font-semibold">{t('Ir para o Mapa de skills')}</Link>
+        </Card>
+      )}
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <Card tone="preparacao" title="Tempo de casa"><p className="text-2xl font-card">{tempoDesde(o.hire_date)}</p></Card>
-        <Card tone="preparacao" title="Tempo no cargo"><p className="text-2xl font-card">{tempoDesde(o.level_since)}</p></Card>
-        <Card tone={status.tone} title="Avaliação"><Tag tone={status.tone}>{status.label}</Tag></Card>
+        <Card tone="preparacao" title={t('Tempo de casa')}><p className="text-2xl font-card">{tempoDesde(o.hire_date, locale)}</p></Card>
+        <Card tone="preparacao" title={t('Tempo no cargo')}><p className="text-2xl font-card">{tempoDesde(o.level_since, locale)}</p></Card>
+        <Card tone={status.tone} title={t('Avaliação')}><Tag tone={status.tone}>{t(status.label)}</Tag></Card>
       </div>
 
-      <Card tone={o.is_complete ? 'consolidacao' : 'pendencias'} title={o.is_complete ? 'Cadastro completo' : 'Falta pouco para completar o cadastro'}>
+      <Card tone={o.is_complete ? 'consolidacao' : 'pendencias'} title={o.is_complete ? t('Cadastro completo') : t('Falta pouco para completar o cadastro')}>
         <ul className="space-y-2">
           {checklist.map((c) => (
             <li key={c.label} className="flex items-center gap-3">
@@ -89,16 +102,17 @@ export default function Perfil() {
       </Card>
 
       {radar.rated && radar.axes.length >= 3 ? (
-        <Card tone="preparacao" title="Seu mapa de hard skills">
+        <Card tone="preparacao" title={t('Seu mapa de hard skills')}>
           <p className="text-sm text-apoio mb-3">
-            Média das suas notas em cada categoria, comparada com o esperado para o seu nível
-            {radar.series.length > 2 ? ' e com a nota do líder da prática' : ''}.
+            {radar.series.length > 2
+              ? t('Média das suas notas em cada categoria, comparada com o esperado para o seu nível e com a nota do líder da prática.')
+              : t('Média das suas notas em cada categoria, comparada com o esperado para o seu nível.')}
           </p>
-          <RadarChart title="Gráfico aranha das hard skills por categoria" axes={radar.axes} series={radar.series} />
+          <RadarChart title={t('Gráfico aranha das hard skills por categoria')} axes={radar.axes.map((a) => t(a))} series={radar.series} />
         </Card>
       ) : (
-        <Card tone="preparacao" title="Seu mapa de hard skills">
-          <p className="text-sm">O gráfico aparece aqui quando você der notas no <Link className="underline" to="/skills">Mapa de skills</Link>.</p>
+        <Card tone="preparacao" title={t('Seu mapa de hard skills')}>
+          <p className="text-sm">{t('O gráfico aparece aqui quando você der notas no Mapa de skills.')} <Link className="underline" to="/skills">{t('Ir para o Mapa de skills')}</Link></p>
         </Card>
       )}
 

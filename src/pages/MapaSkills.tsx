@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Button, Card, ErrorText, Tag } from '../components/ui'
 import { useAuth } from '../lib/auth'
+import { useI18n } from '../lib/i18n'
 import { supabase } from '../lib/supabase'
 import { WEIGHT_LABEL, type ScaleLevel, type ScoreRow, type Weight } from '../lib/types'
 
@@ -10,6 +11,7 @@ const WEIGHT_ORDER: Record<string, number> = { nucleo: 0, complementar: 1, expos
 /** Passo 2: autoavaliação 0–5 de todas as skills ativas, com meta e nota esperada. */
 export default function MapaSkills() {
   const { profile } = useAuth()
+  const { t } = useI18n()
   const [assessmentId, setAssessmentId] = useState<string | null>(null)
   const [status, setStatus] = useState<string>('rascunho')
   const [notes, setNotes] = useState<{ return_note: string | null; leader_note: string | null }>({ return_note: null, leader_note: null })
@@ -26,7 +28,7 @@ export default function MapaSkills() {
     if (!profile?.track_id || !profile.level_id) return
     ;(async () => {
       const { data: aid, error } = await supabase.rpc('start_my_assessment')
-      if (error) { setError(error.message); return }
+      if (error) { setError(t(error.message)); return }
       setAssessmentId(aid)
       const [a, s, w, e, sc] = await Promise.all([
         supabase.from('assessments').select('status, return_note, leader_note').eq('id', aid).single(),
@@ -71,54 +73,66 @@ export default function MapaSkills() {
     const { error } = await supabase.from('assessment_scores').update(patch)
       .eq('assessment_id', assessmentId).eq('skill_id', skillId)
     setSaving((n) => n - 1)
-    if (error) setError(error.message)
+    if (error) setError(t(error.message))
   }
 
   async function submit() {
-    if (!assessmentId || !window.confirm('Enviar para o líder da prática? Depois de enviar, suas notas não podem mais ser alteradas.')) return
+    if (!assessmentId || !window.confirm(t('Enviar para o líder da prática? Depois de enviar, suas notas não podem mais ser alteradas.'))) return
     setSubmitting(true)
     setError('')
     const { error } = await supabase.rpc('submit_assessment', { a: assessmentId })
     setSubmitting(false)
-    if (error) { setError(error.message); return }
+    if (error) { setError(t(error.message)); return }
     setStatus('enviada')
   }
 
   if (!profile?.track_id || !profile.level_id) {
-    return <p>Complete <Link className="underline" to="/cadastro">Sobre você</Link> antes do mapa de skills.</p>
+    return <p>{t('Complete')} <Link className="underline" to="/cadastro">{t('Sobre você')}</Link> {t('antes do mapa de skills.')}</p>
   }
 
   const catIndex = categories.findIndex((c) => c.name === category)
-  const labelOf = (n: number | null) => scale.find((s) => s.score === n)?.label
+  const labelOf = (n: number | null) => t(scale.find((s) => s.score === n)?.label)
 
   return (
     <div className="grid gap-8 lg:grid-cols-[1fr_300px]">
       <div>
-        <p className="font-card text-sm text-apoio">Passo 2 de 3</p>
-        <h1 className="mb-1">Mapa de skills</h1>
+        <p className="font-card text-sm text-apoio">{t('Passo {a} de {b}', { a: 2, b: 3 })}</p>
+        <h1 className="mb-1">{t('Mapa de skills')}</h1>
         <p className="text-apoio mb-4">
-          {rated} de {rows.length} skills com nota · {saving > 0 ? 'salvando…' : 'salvo automaticamente'}
+          {t('{a} de {b} skills com nota', { a: rated, b: rows.length })} · {saving > 0 ? t('salvando…') : t('salvo automaticamente')}
         </p>
         <div className="h-2 bg-midnight/10 rounded mb-6" aria-hidden>
           <div className="h-2 bg-preparacao rounded" style={{ width: `${rows.length ? (rated / rows.length) * 100 : 0}%` }} />
         </div>
+        {editable && rows.length > 0 && (
+          rated === rows.length ? (
+            <Card tone="pendencias" title={t('Falta enviar seu mapa para o líder')} className="mb-6">
+              <p className="text-sm mb-3">{t('Você deu nota em todas as skills. O líder da prática só consegue avaliar depois que você enviar.')}</p>
+              <Button onClick={submit} disabled={submitting}>{submitting ? t('Enviando…') : t('Enviar para o líder')}</Button>
+            </Card>
+          ) : (
+            <p className="text-sm bg-pendencias/10 border-l-4 border-pendencias px-3 py-2 rounded mb-4">
+              {t('Seu mapa ainda não foi enviado. Dê nota em todas as skills e clique em')} <strong>{t('Enviar para o líder')}</strong> {t('no fim da página.')}
+            </p>
+          )
+        )}
         {editable && notes.return_note && (
-          <ErrorText>O líder devolveu sua avaliação: "{notes.return_note}". Ajuste e envie de novo.</ErrorText>
+          <ErrorText>{t('O líder devolveu sua avaliação: "{note}". Ajuste e envie de novo.', { note: notes.return_note })}</ErrorText>
         )}
         {(status === 'enviada' || status === 'em_revisao') && (
           <p role="status" className="text-sm bg-seminario/10 border-l-4 border-seminario px-3 py-2 rounded mb-4">
-            Sua autoavaliação está com o líder da prática. Suas notas não mudam mais; a nota do líder vai aparecer ao lado de cada uma.
+            {t('Sua autoavaliação está com o líder da prática. Suas notas não mudam mais; a nota do líder vai aparecer ao lado de cada uma.')}
           </p>
         )}
         {status === 'validada' && (
-          <Card tone="consolidacao" title="Avaliação do líder" className="mb-6">
-            <p className="text-sm mb-2">Sua nota continua a mesma. A nota do líder aparece ao lado em cada skill, com a justificativa quando for diferente.</p>
+          <Card tone="consolidacao" title={t('Avaliação do líder')} className="mb-6">
+            <p className="text-sm mb-2">{t('Sua nota continua a mesma. A nota do líder aparece ao lado em cada skill, com a justificativa quando for diferente.')}</p>
             {notes.leader_note && <p className="text-sm whitespace-pre-line">{notes.leader_note}</p>}
           </Card>
         )}
         <ErrorText>{error}</ErrorText>
 
-        <nav className="flex flex-wrap gap-2 mb-6" aria-label="Categorias">
+        <nav className="flex flex-wrap gap-2 mb-6" aria-label={t('Categorias')}>
           {categories.map((c) => {
             const inCat = rows.filter((r) => r.skill.category.name === c.name)
             const done = inCat.every((r) => r.self_score !== null)
@@ -127,7 +141,7 @@ export default function MapaSkills() {
                 className={`px-3 py-1.5 rounded-md text-sm font-card font-semibold border ${
                   c.name === category ? 'bg-midnight text-white border-midnight'
                     : done ? 'border-consolidacao text-consolidacao' : 'border-midnight/20'}`}>
-                {c.name} {done && '✓'}
+                {t(c.name)} {done && '✓'}
               </button>
             )
           })}
@@ -140,16 +154,16 @@ export default function MapaSkills() {
             return (
               <Card key={r.skill_id} tone={r.self_score === null ? 'pendencias' : 'preparacao'}>
                 <div className="flex flex-wrap items-start justify-between gap-2 mb-1">
-                  <h3>{r.skill.name}</h3>
+                  <h3>{t(r.skill.name)}</h3>
                   <div className="flex gap-2">
-                    {w && <Tag tone={w === 'nucleo' ? 'seminario' : 'neutro'}>{WEIGHT_LABEL[w]}</Tag>}
-                    {exp !== undefined && <Tag tone="neutro">Esperado no seu nível: {exp}</Tag>}
+                    {w && <Tag tone={w === 'nucleo' ? 'seminario' : 'neutro'}>{t(WEIGHT_LABEL[w])}</Tag>}
+                    {exp !== undefined && <Tag tone="neutro">{t('Esperado no seu nível: {n}', { n: exp })}</Tag>}
                   </div>
                 </div>
-                <p className="text-apoio text-sm mb-4">{r.skill.description}</p>
+                <p className="text-apoio text-sm mb-4">{t(r.skill.description)}</p>
                 <div className="flex flex-wrap items-end gap-6">
                   <fieldset disabled={!editable}>
-                    <legend className="font-card font-semibold text-sm mb-1">Hoje</legend>
+                    <legend className="font-card font-semibold text-sm mb-1">{t('Hoje')}</legend>
                     <div className="flex gap-1" role="radiogroup">
                       {[0, 1, 2, 3, 4, 5].map((n) => (
                         <button key={n} type="button" role="radio" aria-checked={r.self_score === n}
@@ -162,7 +176,7 @@ export default function MapaSkills() {
                     </div>
                   </fieldset>
                   <label className="text-sm">
-                    <span className="block font-card font-semibold mb-1">Meta</span>
+                    <span className="block font-card font-semibold mb-1">{t('Meta')}</span>
                     <select disabled={!editable} value={r.target_score ?? ''}
                       onChange={(e) => save(r.skill_id, { target_score: e.target.value === '' ? null : Number(e.target.value) })}
                       className="rounded-md border border-midnight/25 px-2 py-2 bg-white">
@@ -172,11 +186,11 @@ export default function MapaSkills() {
                   </label>
                   {r.self_score !== null && <span className="text-sm text-apoio pb-2">{labelOf(r.self_score)}</span>}
                   {status === 'validada' && r.leader_score != null && (
-                    <span className="pb-2"><Tag tone={r.leader_score === r.self_score ? 'consolidacao' : 'seminario'}>Líder: {r.leader_score}</Tag></span>
+                    <span className="pb-2"><Tag tone={r.leader_score === r.self_score ? 'consolidacao' : 'seminario'}>{t('Líder: {n}', { n: r.leader_score })}</Tag></span>
                   )}
                 </div>
                 {status === 'validada' && r.justification && (
-                  <p className="text-sm mt-3"><span className="font-card font-semibold">Justificativa do líder:</span> {r.justification}</p>
+                  <p className="text-sm mt-3"><span className="font-card font-semibold">{t('Justificativa do líder:')}</span> {r.justification}</p>
                 )}
               </Card>
             )
@@ -184,30 +198,30 @@ export default function MapaSkills() {
         </div>
 
         <div className="flex gap-3 mt-6">
-          {catIndex > 0 && <Button variant="secondary" onClick={() => setCategory(categories[catIndex - 1].name)}>Anterior</Button>}
+          {catIndex > 0 && <Button variant="secondary" onClick={() => setCategory(categories[catIndex - 1].name)}>{t('Anterior')}</Button>}
           {catIndex < categories.length - 1
-            ? <Button onClick={() => { setCategory(categories[catIndex + 1].name); window.scrollTo(0, 0) }}>Próxima categoria</Button>
-            : <Link to="/cadastro#curriculo"><Button variant={editable && rated === rows.length ? 'secondary' : 'primary'}>Ir para o currículo</Button></Link>}
+            ? <Button onClick={() => { setCategory(categories[catIndex + 1].name); window.scrollTo(0, 0) }}>{t('Próxima categoria')}</Button>
+            : <Link to="/cadastro#curriculo"><Button variant={editable && rated === rows.length ? 'secondary' : 'primary'}>{t('Ir para o currículo')}</Button></Link>}
           {editable && rated === rows.length && rows.length > 0 && (
-            <Button onClick={submit} disabled={submitting}>{submitting ? 'Enviando…' : 'Enviar para o líder'}</Button>
+            <Button onClick={submit} disabled={submitting}>{submitting ? t('Enviando…') : t('Enviar para o líder')}</Button>
           )}
         </div>
         {editable && rated < rows.length && (
-          <p className="text-sm text-apoio mt-3">Quando todas as skills tiverem nota, aparece o botão para enviar ao líder da prática.</p>
+          <p className="text-sm text-apoio mt-3">{t('Quando todas as skills tiverem nota, aparece o botão para enviar ao líder da prática.')}</p>
         )}
       </div>
 
       <aside className="lg:sticky lg:top-6 self-start">
-        <Card tone="seminario" title="Escala">
+        <Card tone="seminario" title={t('Escala')}>
           <ol className="space-y-3">
             {scale.map((s) => (
               <li key={s.score}>
-                <p className="font-card font-semibold">{s.score} · {s.label}</p>
-                <p className="text-sm text-apoio">{s.description}</p>
+                <p className="font-card font-semibold">{s.score} · {t(s.label)}</p>
+                <p className="text-sm text-apoio">{t(s.description)}</p>
               </li>
             ))}
           </ol>
-          <p className="text-sm text-apoio mt-4">Isto é para o seu PDI, não é avaliação de desempenho. Seja sincero: a nota validada vem depois, em conversa com o líder da prática.</p>
+          <p className="text-sm text-apoio mt-4">{t('Isto é para o seu PDI, não é avaliação de desempenho. Seja sincero: a nota validada vem depois, em conversa com o líder da prática.')}</p>
         </Card>
       </aside>
     </div>

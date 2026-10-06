@@ -4,6 +4,7 @@ import { Button, Card, ErrorText, Field, Input, Select, Tag, Textarea } from './
 import { useAuth } from '../lib/auth'
 import { supabase } from '../lib/supabase'
 import { COURSE_KINDS, LANGUAGE_LEVELS } from '../lib/types'
+import { useI18n, type T } from '../lib/i18n'
 
 interface Extracted {
   job_title: string | null
@@ -36,24 +37,26 @@ type CareerForm = typeof emptyCareer
 const emptyCourse = { kind: 'curso', name: '', institution: '', completed_on: '', workload_hours: '', credential_url: '' }
 type CourseForm = typeof emptyCourse
 
-async function functionError(error: unknown): Promise<string> {
+async function functionError(error: unknown, t: T): Promise<string> {
   if (error instanceof FunctionsHttpError) {
     const body = await error.context.json().catch(() => null)
-    if (body?.error) return body.error
+    if (body?.error) return t(body.error)
     const status = error.context.status
     const msg = body?.message ?? body?.msg ?? body?.code ?? ''
-    return `Não foi possível ler o currículo (erro ${status}${msg ? `: ${msg}` : ''}).`
+    return msg
+      ? t('Não foi possível ler o currículo (erro {status}: {msg}).', { status, msg })
+      : t('Não foi possível ler o currículo (erro {status}).', { status })
   }
   const detail = error instanceof Error ? ` (${error.message})` : ''
-  return `Não foi possível ler o currículo. Tente de novo.${detail}`
+  return t('Não foi possível ler o currículo. Tente de novo.') + detail
 }
 
 const norm = (s: string | null) => (s ?? '').trim().toLowerCase()
 const blank = (v: string) => (v.trim() === '' ? null : v.trim())
-const fmtMonth = (d: string | null) =>
-  d ? new Date(d + 'T00:00').toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' }) : null
-const periodo = (start: string | null, end: string | null) =>
-  !start && !end ? null : `${fmtMonth(start) ?? '?'} – ${fmtMonth(end) ?? 'atual'}`
+const fmtMonth = (d: string | null, dateLocale: string) =>
+  d ? new Date(d + 'T00:00').toLocaleDateString(dateLocale, { month: 'short', year: 'numeric' }) : null
+const periodo = (start: string | null, end: string | null, t: T, dateLocale: string) =>
+  !start && !end ? null : `${fmtMonth(start, dateLocale) ?? '?'} – ${fmtMonth(end, dateLocale) ?? t('atual')}`
 const kindLabel = (v: string) => COURSE_KINDS.find(([k]) => k === v)?.[1] ?? v
 
 function careerToForm(c: CareerEntry): CareerForm {
@@ -82,35 +85,37 @@ function courseFromForm(f: CourseForm) {
 }
 
 function CareerFields({ form, setForm }: { form: CareerForm; setForm: (f: CareerForm) => void }) {
+  const { t } = useI18n()
   const set = (k: keyof CareerForm) => (e: { target: { value: string } }) => setForm({ ...form, [k]: e.target.value })
   return (
     <div className="space-y-4">
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Empresa"><Input required value={form.company} onChange={set('company')} /></Field>
-        <Field label="Cargo"><Input value={form.job_title} onChange={set('job_title')} /></Field>
-        <Field label="Entrada"><Input type="date" value={form.started_on} onChange={set('started_on')} /></Field>
-        <Field label="Saída" hint="Deixe em branco se ainda trabalha lá."><Input type="date" value={form.ended_on} onChange={set('ended_on')} /></Field>
+        <Field label={t('Empresa')}><Input required value={form.company} onChange={set('company')} /></Field>
+        <Field label={t('Cargo')}><Input value={form.job_title} onChange={set('job_title')} /></Field>
+        <Field label={t('Entrada')}><Input type="date" value={form.started_on} onChange={set('started_on')} /></Field>
+        <Field label={t('Saída')} hint={t('Deixe em branco se ainda trabalha lá.')}><Input type="date" value={form.ended_on} onChange={set('ended_on')} /></Field>
       </div>
-      <Field label="O que você fazia"><Textarea value={form.description} onChange={set('description')} /></Field>
+      <Field label={t('O que você fazia')}><Textarea value={form.description} onChange={set('description')} /></Field>
     </div>
   )
 }
 
 function CourseFields({ form, setForm, kinds }: { form: CourseForm; setForm: (f: CourseForm) => void; kinds: string[] }) {
+  const { t } = useI18n()
   const set = (k: keyof CourseForm) => (e: { target: { value: string } }) => setForm({ ...form, [k]: e.target.value })
   const academic = kinds.includes('graduacao')
   return (
     <div className="grid gap-4 sm:grid-cols-2">
-      <Field label={academic ? 'Curso' : 'Nome'}><Input required value={form.name} onChange={set('name')} /></Field>
-      <Field label="Tipo">
+      <Field label={academic ? t('Curso') : t('Nome')}><Input required value={form.name} onChange={set('name')} /></Field>
+      <Field label={t('Tipo')}>
         <Select value={form.kind} onChange={set('kind')}>
-          {COURSE_KINDS.filter(([v]) => kinds.includes(v)).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+          {COURSE_KINDS.filter(([v]) => kinds.includes(v)).map(([v, l]) => <option key={v} value={v}>{t(l)}</option>)}
         </Select>
       </Field>
-      <Field label="Instituição"><Input value={form.institution} onChange={set('institution')} /></Field>
-      <Field label="Conclusão"><Input type="date" value={form.completed_on} onChange={set('completed_on')} /></Field>
-      {!academic && <Field label="Carga horária (h)"><Input type="number" min={1} value={form.workload_hours} onChange={set('workload_hours')} /></Field>}
-      <Field label={academic ? 'Link do diploma' : 'Link do certificado'}>
+      <Field label={t('Instituição')}><Input value={form.institution} onChange={set('institution')} /></Field>
+      <Field label={t('Conclusão')}><Input type="date" value={form.completed_on} onChange={set('completed_on')} /></Field>
+      {!academic && <Field label={t('Carga horária (h)')}><Input type="number" min={1} value={form.workload_hours} onChange={set('workload_hours')} /></Field>}
+      <Field label={academic ? t('Link do diploma') : t('Link do certificado')}>
         <Input type="url" value={form.credential_url} onChange={set('credential_url')} placeholder="https://" />
       </Field>
     </div>
@@ -118,10 +123,11 @@ function CourseFields({ form, setForm, kinds }: { form: CourseForm; setForm: (f:
 }
 
 function RowActions({ onEdit, onRemove }: { onEdit: () => void; onRemove: () => void }) {
+  const { t } = useI18n()
   return (
     <div className="flex gap-3 shrink-0 text-sm">
-      <button className="underline" onClick={onEdit}>Editar</button>
-      <button className="underline text-apoio" onClick={onRemove}>Excluir</button>
+      <button className="underline" onClick={onEdit}>{t('Editar')}</button>
+      <button className="underline text-apoio" onClick={onRemove}>{t('Excluir')}</button>
     </div>
   )
 }
@@ -132,6 +138,7 @@ function CourseSection({ title, tone, kinds, addLabel, courses, onChanged, setEr
   courses: Course[]; onChanged: () => void; setError: (e: string) => void
 }) {
   const { profile } = useAuth()
+  const { t, dateLocale } = useI18n()
   const empty = { ...emptyCourse, kind: kinds[0] }
   const [adding, setAdding] = useState(false)
   const [newForm, setNewForm] = useState<CourseForm>(empty)
@@ -142,7 +149,7 @@ function CourseSection({ title, tone, kinds, addLabel, courses, onChanged, setEr
     e.preventDefault()
     if (!profile) return
     const { error } = await supabase.from('courses').insert({ ...courseFromForm(newForm), profile_id: profile.id })
-    if (error) { setError(error.message); return }
+    if (error) { setError(t(error.message)); return }
     setNewForm(empty)
     setAdding(false)
     onChanged()
@@ -151,19 +158,19 @@ function CourseSection({ title, tone, kinds, addLabel, courses, onChanged, setEr
     e.preventDefault()
     if (!editing) return
     const { error } = await supabase.from('courses').update(courseFromForm(editing.form)).eq('id', editing.id)
-    if (error) { setError(error.message); return }
+    if (error) { setError(t(error.message)); return }
     setEditing(null)
     onChanged()
   }
   async function remove(c: Course) {
-    if (!window.confirm(`Excluir "${c.name}"?`)) return
+    if (!window.confirm(t('Excluir "{nome}"?', { nome: c.name }))) return
     await supabase.from('courses').delete().eq('id', c.id)
     onChanged()
   }
 
   return (
-    <Card title={title} tone={tone}>
-      {items.length === 0 && !adding && <p className="text-sm text-apoio mb-4">Nada cadastrado ainda.</p>}
+    <Card title={t(title)} tone={tone}>
+      {items.length === 0 && !adding && <p className="text-sm text-apoio mb-4">{t('Nada cadastrado ainda.')}</p>}
       {items.length > 0 && (
         <ul className="divide-y divide-midnight/10 mb-4">
           {items.map((c) => (
@@ -172,18 +179,18 @@ function CourseSection({ title, tone, kinds, addLabel, courses, onChanged, setEr
                 <form onSubmit={save} className="space-y-3">
                   <CourseFields form={editing.form} setForm={(form) => setEditing({ id: c.id, form })} kinds={kinds} />
                   <div className="flex gap-3">
-                    <Button type="submit">Salvar</Button>
-                    <Button type="button" variant="secondary" onClick={() => setEditing(null)}>Cancelar</Button>
+                    <Button type="submit">{t('Salvar')}</Button>
+                    <Button type="button" variant="secondary" onClick={() => setEditing(null)}>{t('Cancelar')}</Button>
                   </div>
                 </form>
               ) : (
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <p className="font-card font-semibold">{c.name} <Tag tone="neutro">{kindLabel(c.kind)}</Tag></p>
+                    <p className="font-card font-semibold">{c.name} <Tag tone="neutro">{t(kindLabel(c.kind))}</Tag></p>
                     <p className="text-sm text-apoio">
-                      {[c.institution, fmtMonth(c.completed_on), c.workload_hours && `${c.workload_hours} h`].filter(Boolean).join(' · ')}
+                      {[c.institution, fmtMonth(c.completed_on, dateLocale), c.workload_hours && `${c.workload_hours} h`].filter(Boolean).join(' · ')}
                     </p>
-                    {c.credential_url && <a className="text-sm underline text-preparacao" href={c.credential_url} target="_blank" rel="noreferrer">Ver comprovante ↗</a>}
+                    {c.credential_url && <a className="text-sm underline text-preparacao" href={c.credential_url} target="_blank" rel="noreferrer">{t('Ver comprovante ↗')}</a>}
                   </div>
                   <RowActions onEdit={() => setEditing({ id: c.id, form: courseToForm(c) })} onRemove={() => remove(c)} />
                 </div>
@@ -196,12 +203,12 @@ function CourseSection({ title, tone, kinds, addLabel, courses, onChanged, setEr
         <form onSubmit={add} className="space-y-4">
           <CourseFields form={newForm} setForm={setNewForm} kinds={kinds} />
           <div className="flex gap-3">
-            <Button type="submit">Adicionar</Button>
-            <Button type="button" variant="secondary" onClick={() => setAdding(false)}>Cancelar</Button>
+            <Button type="submit">{t('Adicionar')}</Button>
+            <Button type="button" variant="secondary" onClick={() => setAdding(false)}>{t('Cancelar')}</Button>
           </div>
         </form>
       ) : (
-        <Button type="button" variant="secondary" onClick={() => setAdding(true)}>{addLabel}</Button>
+        <Button type="button" variant="secondary" onClick={() => setAdding(true)}>{t(addLabel)}</Button>
       )}
     </Card>
   )
@@ -213,6 +220,7 @@ function CourseSection({ title, tone, kinds, addLabel, courses, onChanged, setEr
  */
 export default function MeuCurriculo() {
   const { profile, reloadProfile } = useAuth()
+  const { t, locale, dateLocale } = useI18n()
   const profileId = profile?.id
   const [file, setFile] = useState<ResumeFile | null>(null)
   const [career, setCareer] = useState<CareerEntry[]>([])
@@ -276,29 +284,29 @@ export default function MeuCurriculo() {
     setError('')
     setNotice('')
     const ext = f.name.split('.').pop()?.toLowerCase() ?? ''
-    if (!TYPES[ext]) { setError('Envie um arquivo PDF ou Word (.docx). Arquivos .doc antigos: salve como .docx antes.'); return }
-    if (f.size > MAX_MB * 1024 * 1024) { setError(`O arquivo passa de ${MAX_MB} MB.`); return }
+    if (!TYPES[ext]) { setError(t('Envie um arquivo PDF ou Word (.docx). Arquivos .doc antigos: salve como .docx antes.')); return }
+    if (f.size > MAX_MB * 1024 * 1024) { setError(t('O arquivo passa de {mb} MB.', { mb: MAX_MB })); return }
 
-    setBusy('Enviando o arquivo…')
+    setBusy(t('Enviando o arquivo…'))
     const path = `${profile.id}/${crypto.randomUUID()}.${ext}`
     const up = await supabase.storage.from('resumes').upload(path, f, { contentType: TYPES[ext] })
-    if (up.error) { setBusy(''); setError('Não foi possível enviar o arquivo.'); return }
+    if (up.error) { setBusy(''); setError(t('Não foi possível enviar o arquivo.')); return }
     const { data: row, error: insErr } = await supabase.from('resume_imports')
       .insert({ profile_id: profile.id, storage_path: path, file_name: f.name, mime_type: TYPES[ext] })
       .select('id').single()
-    if (insErr || !row) { setBusy(''); setError(insErr?.message ?? 'Erro ao registrar o envio.'); return }
+    if (insErr || !row) { setBusy(''); setError(insErr ? t(insErr.message) : t('Erro ao registrar o envio.')); return }
 
-    setBusy('Lendo o currículo. Isso leva menos de um minuto…')
-    const { data, error: fnErr } = await supabase.functions.invoke('ler-curriculo', { body: { import_id: row.id } })
+    setBusy(t('Lendo o currículo. Isso leva menos de um minuto…'))
+    const { data, error: fnErr } = await supabase.functions.invoke('ler-curriculo', { body: { import_id: row.id, locale } })
     if (fnErr || !data?.extracted) {
       setBusy('')
-      setError(fnErr ? await functionError(fnErr) : `A função respondeu sem sugestões: ${JSON.stringify(data).slice(0, 200)}`)
+      setError(fnErr ? await functionError(fnErr, t) : t('A função respondeu sem sugestões: {resposta}', { resposta: JSON.stringify(data).slice(0, 200) }))
       await supabase.storage.from('resumes').remove([path])
       await supabase.from('resume_imports').delete().eq('id', row.id)
       return
     }
 
-    setBusy('Salvando no seu perfil…')
+    setBusy(t('Salvando no seu perfil…'))
     const added = await saveExtracted(data.extracted as Extracted)
     await supabase.from('resume_imports')
       .update({ status: 'aplicado', applied_at: new Date().toISOString(), extracted: null }).eq('id', row.id)
@@ -310,8 +318,8 @@ export default function MeuCurriculo() {
     await reloadProfile()
     changed()
     setBusy('')
-    setNotice(`Currículo lido. Entraram ${added.career} experiências, ${added.courses} cursos e formações e ${added.languages} idiomas. ` +
-      'Confira abaixo; edite ou exclua o que não estiver certo.')
+    setNotice(t('Currículo lido. Entraram {experiencias} experiências, {cursos} cursos e formações e {idiomas} idiomas. Confira abaixo; edite ou exclua o que não estiver certo.',
+      { experiencias: added.career, cursos: added.courses, idiomas: added.languages }))
   }
 
   async function download() {
@@ -321,7 +329,7 @@ export default function MeuCurriculo() {
   }
 
   async function removeFile() {
-    if (!file || !window.confirm('Excluir o arquivo do currículo? Experiência, formação, cursos e idiomas continuam no perfil.')) return
+    if (!file || !window.confirm(t('Excluir o arquivo do currículo? Experiência, formação, cursos e idiomas continuam no perfil.'))) return
     await supabase.storage.from('resumes').remove([file.storage_path])
     await supabase.from('resume_imports').delete().eq('id', file.id)
     changed()
@@ -331,7 +339,7 @@ export default function MeuCurriculo() {
     e.preventDefault()
     if (!profileId) return
     const { error } = await supabase.from('career_entries').insert({ ...careerFromForm(newCareer), profile_id: profileId })
-    if (error) { setError(error.message); return }
+    if (error) { setError(t(error.message)); return }
     setNewCareer(emptyCareer)
     setAddingCareer(false)
     changed()
@@ -341,13 +349,13 @@ export default function MeuCurriculo() {
     e.preventDefault()
     if (!editingCareer) return
     const { error } = await supabase.from('career_entries').update(careerFromForm(editingCareer.form)).eq('id', editingCareer.id)
-    if (error) { setError(error.message); return }
+    if (error) { setError(t(error.message)); return }
     setEditingCareer(null)
     changed()
   }
 
   async function removeCareer(c: CareerEntry) {
-    if (!window.confirm(`Excluir "${c.company}"?`)) return
+    if (!window.confirm(t('Excluir "{nome}"?', { nome: c.company }))) return
     await supabase.from('career_entries').delete().eq('id', c.id)
     changed()
   }
@@ -357,7 +365,7 @@ export default function MeuCurriculo() {
     if (!profileId || !newLang.language.trim()) return
     const { error } = await supabase.from('profile_languages')
       .upsert({ profile_id: profileId, language: newLang.language.trim(), level: newLang.level })
-    if (error) { setError(error.message); return }
+    if (error) { setError(t(error.message)); return }
     setNewLang({ language: '', level: 'intermediario' })
     changed()
   }
@@ -377,32 +385,32 @@ export default function MeuCurriculo() {
   return (
     <section id="curriculo" className="space-y-6 scroll-mt-6">
       <div>
-        <h2 className="mb-1">Currículo</h2>
+        <h2 className="mb-1">{t('Currículo')}</h2>
         <p className="text-apoio">
-          Envie seu currículo e a plataforma preenche experiência, formação, cursos e idiomas. Depois é só editar ou
-          excluir o que precisar. As notas do mapa de skills continuam sendo só suas.
+          {t('Envie seu currículo e a plataforma preenche experiência, formação, cursos e idiomas. Depois é só editar ou excluir o que precisar. As notas do mapa de skills continuam sendo só suas.')}
         </p>
       </div>
 
-      <Card title="Arquivo do currículo">
+      <Card title={t('Arquivo do currículo')}>
         {file && (
           <div className="flex flex-wrap items-center gap-3 mb-4">
             <span className="font-card font-semibold">{file.file_name}</span>
-            <span className="text-sm text-apoio">enviado em {new Date(file.created_at).toLocaleDateString('pt-BR')}</span>
-            <button className="text-sm underline text-preparacao" onClick={download}>Baixar</button>
-            <button className="text-sm underline text-apoio" onClick={removeFile}>Excluir arquivo</button>
+            <span className="text-sm text-apoio">{t('enviado em {data}', { data: new Date(file.created_at).toLocaleDateString(dateLocale) })}</span>
+            <button className="text-sm underline text-preparacao" onClick={download}>{t('Baixar')}</button>
+            <button className="text-sm underline text-apoio" onClick={removeFile}>{t('Excluir arquivo')}</button>
           </div>
         )}
         <label className="block">
           <span className="block font-card font-semibold text-sm mb-2">
-            {file ? 'Enviar uma versão nova' : 'Enviar currículo'} (PDF ou .docx, até {MAX_MB} MB)
+            {file
+              ? t('Enviar uma versão nova (PDF ou .docx, até {mb} MB)', { mb: MAX_MB })
+              : t('Enviar currículo (PDF ou .docx, até {mb} MB)', { mb: MAX_MB })}
           </span>
           <input type="file" accept=".pdf,.docx" onChange={upload} disabled={!!busy}
             className="block text-sm file:mr-4 file:rounded-md file:border-0 file:bg-preparacao file:px-4 file:py-2 file:text-white file:font-card file:font-semibold" />
         </label>
         <p className="text-sm text-apoio mt-4">
-          O arquivo é lido por IA (Claude, da Anthropic) para preencher o perfil. Fica guardado só o mais recente, visível
-          para você, seu gestor, o líder da prática e o admin.
+          {t('O arquivo é lido por IA (Claude, da Anthropic) para preencher o perfil. Fica guardado só o mais recente, visível para você, seu gestor, o líder da prática e o admin.')}
         </p>
       </Card>
 
@@ -410,8 +418,8 @@ export default function MeuCurriculo() {
       {notice && <p role="status" className="text-sm bg-consolidacao/10 border-l-4 border-consolidacao px-3 py-2 rounded">{notice}</p>}
       <ErrorText>{error}</ErrorText>
 
-      <Card title="Experiência" tone="preparacao">
-        {career.length === 0 && !addingCareer && <p className="text-sm text-apoio mb-4">Nenhuma empresa cadastrada ainda.</p>}
+      <Card title={t('Experiência')} tone="preparacao">
+        {career.length === 0 && !addingCareer && <p className="text-sm text-apoio mb-4">{t('Nenhuma empresa cadastrada ainda.')}</p>}
         {career.length > 0 && (
           <ul className="divide-y divide-midnight/10 mb-4">
             {career.map((c) => (
@@ -420,15 +428,15 @@ export default function MeuCurriculo() {
                   <form onSubmit={saveCareer} className="space-y-3">
                     <CareerFields form={editingCareer.form} setForm={(form) => setEditingCareer({ id: c.id, form })} />
                     <div className="flex gap-3">
-                      <Button type="submit">Salvar</Button>
-                      <Button type="button" variant="secondary" onClick={() => setEditingCareer(null)}>Cancelar</Button>
+                      <Button type="submit">{t('Salvar')}</Button>
+                      <Button type="button" variant="secondary" onClick={() => setEditingCareer(null)}>{t('Cancelar')}</Button>
                     </div>
                   </form>
                 ) : (
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <p className="font-card font-semibold">{c.company}</p>
-                      <p className="text-sm text-apoio">{[c.job_title, periodo(c.started_on, c.ended_on)].filter(Boolean).join(' · ')}</p>
+                      <p className="text-sm text-apoio">{[c.job_title, periodo(c.started_on, c.ended_on, t, dateLocale)].filter(Boolean).join(' · ')}</p>
                       {c.description && <p className="text-sm mt-1">{c.description}</p>}
                     </div>
                     <RowActions onEdit={() => setEditingCareer({ id: c.id, form: careerToForm(c) })} onRemove={() => removeCareer(c)} />
@@ -442,12 +450,12 @@ export default function MeuCurriculo() {
           <form onSubmit={addCareer} className="space-y-4">
             <CareerFields form={newCareer} setForm={setNewCareer} />
             <div className="flex gap-3">
-              <Button type="submit">Adicionar</Button>
-              <Button type="button" variant="secondary" onClick={() => setAddingCareer(false)}>Cancelar</Button>
+              <Button type="submit">{t('Adicionar')}</Button>
+              <Button type="button" variant="secondary" onClick={() => setAddingCareer(false)}>{t('Cancelar')}</Button>
             </div>
           </form>
         ) : (
-          <Button type="button" variant="secondary" onClick={() => setAddingCareer(true)}>Adicionar empresa</Button>
+          <Button type="button" variant="secondary" onClick={() => setAddingCareer(true)}>{t('Adicionar empresa')}</Button>
         )}
       </Card>
 
@@ -456,7 +464,7 @@ export default function MeuCurriculo() {
       <CourseSection title="Cursos e certificações" tone="seminario" kinds={CURSO} addLabel="Adicionar curso"
         courses={courses} onChanged={changed} setError={setError} />
 
-      <Card title="Idiomas" tone="consolidacao">
+      <Card title={t('Idiomas')} tone="consolidacao">
         {languages.length > 0 && (
           <ul className="divide-y divide-midnight/10 mb-4">
             {languages.map((l) => (
@@ -464,23 +472,23 @@ export default function MeuCurriculo() {
                 <span className="font-card font-semibold">{l.language}</span>
                 <div className="flex items-center gap-3">
                   <select value={l.level} onChange={(e) => changeLevel(l.language, e.target.value)}
-                    className="rounded-md border border-midnight/25 px-2 py-1 bg-white" aria-label={`Nível em ${l.language}`}>
-                    {LANGUAGE_LEVELS.map(([v, lab]) => <option key={v} value={v}>{lab}</option>)}
+                    className="rounded-md border border-midnight/25 px-2 py-1 bg-white" aria-label={t('Nível em {idioma}', { idioma: l.language })}>
+                    {LANGUAGE_LEVELS.map(([v, lab]) => <option key={v} value={v}>{t(lab)}</option>)}
                   </select>
-                  <button onClick={() => removeLanguage(l.language)} className="text-sm text-apoio underline">Excluir</button>
+                  <button onClick={() => removeLanguage(l.language)} className="text-sm text-apoio underline">{t('Excluir')}</button>
                 </div>
               </li>
             ))}
           </ul>
         )}
         <form onSubmit={addLanguage} className="grid gap-3 sm:grid-cols-[1fr_200px_auto] items-end">
-          <Field label="Idioma"><Input value={newLang.language} onChange={(e) => setNewLang({ ...newLang, language: e.target.value })} placeholder="Ex.: Inglês" /></Field>
-          <Field label="Nível">
+          <Field label={t('Idioma')}><Input value={newLang.language} onChange={(e) => setNewLang({ ...newLang, language: e.target.value })} placeholder={t('Ex.: Inglês')} /></Field>
+          <Field label={t('Nível')}>
             <Select value={newLang.level} onChange={(e) => setNewLang({ ...newLang, level: e.target.value })}>
-              {LANGUAGE_LEVELS.map(([v, lab]) => <option key={v} value={v}>{lab}</option>)}
+              {LANGUAGE_LEVELS.map(([v, lab]) => <option key={v} value={v}>{t(lab)}</option>)}
             </Select>
           </Field>
-          <Button type="submit">Adicionar</Button>
+          <Button type="submit">{t('Adicionar')}</Button>
         </form>
       </Card>
     </section>

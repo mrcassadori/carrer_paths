@@ -1,5 +1,6 @@
 import { NavLink, Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom'
 import { useAuth } from './lib/auth'
+import { LanguageSwitcher, useI18n } from './lib/i18n'
 import { supabaseConfigured } from './lib/supabase'
 import { hasBasics } from './lib/types'
 import Adocao from './pages/Adocao'
@@ -15,7 +16,8 @@ import Projetos from './pages/Projetos'
 function Layout() {
   const { session, profile, loading, signOut } = useAuth()
   const { pathname } = useLocation()
-  if (loading) return <p className="p-8 text-apoio">Carregando…</p>
+  const { t } = useI18n()
+  if (loading) return <p className="p-8 text-apoio">{t('Carregando…')}</p>
   if (!session) return <Navigate to="/entrar" replace />
   const link = ({ isActive }: { isActive: boolean }) =>
     `px-3 py-2 rounded-md font-card font-semibold text-sm ${isActive ? 'bg-white text-midnight' : 'text-white/90 hover:text-white'}`
@@ -25,15 +27,18 @@ function Layout() {
         <div className="max-w-6xl mx-auto px-4 py-3 flex flex-wrap items-center gap-4">
           <span className="font-titulo font-extrabold text-xl mr-4">Career Paths</span>
           <nav className="flex gap-1 flex-wrap">
-            <NavLink to="/" end className={link}>Meu perfil</NavLink>
-            <NavLink to="/cadastro" className={link}>Sobre você</NavLink>
-            <NavLink to="/skills" className={link}>Mapa de skills</NavLink>
-            <NavLink to="/projetos" className={link}>Projetos</NavLink>
-            {profile && ['lider_pratica', 'admin'].includes(profile.app_role) && <NavLink to="/avaliacoes" className={link}>Avaliações</NavLink>}
-            {profile && profile.app_role !== 'colaborador' && <NavLink to="/adocao" className={link}>Adoção</NavLink>}
-            {profile?.app_role === 'admin' && <NavLink to="/pessoas" className={link}>Pessoas</NavLink>}
+            <NavLink to="/" end className={link}>{t('Meu perfil')}</NavLink>
+            <NavLink to="/cadastro" className={link}>{t('Sobre você')}</NavLink>
+            <NavLink to="/skills" className={link}>{t('Mapa de skills')}</NavLink>
+            <NavLink to="/projetos" className={link}>{t('Projetos')}</NavLink>
+            {profile && ['lider_pratica', 'admin'].includes(profile.app_role) && <NavLink to="/avaliacoes" className={link}>{t('Avaliações')}</NavLink>}
+            {profile && profile.app_role !== 'colaborador' && <NavLink to="/adocao" className={link}>{t('Adoção')}</NavLink>}
+            {profile?.app_role === 'admin' && <NavLink to="/pessoas" className={link}>{t('Pessoas')}</NavLink>}
           </nav>
-          <button onClick={signOut} className="ml-auto text-sm text-white/80 hover:text-white">Sair</button>
+          <div className="ml-auto flex items-center gap-4">
+            <LanguageSwitcher dark />
+            <button onClick={signOut} className="text-sm text-white/80 hover:text-white">{t('Sair')}</button>
+          </div>
         </div>
       </header>
       <main className="max-w-6xl mx-auto px-4 py-8">
