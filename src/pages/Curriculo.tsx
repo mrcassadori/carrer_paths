@@ -28,8 +28,12 @@ async function functionError(error: unknown): Promise<string> {
   if (error instanceof FunctionsHttpError) {
     const body = await error.context.json().catch(() => null)
     if (body?.error) return body.error
+    const status = error.context.status
+    const msg = body?.message ?? body?.msg ?? body?.code ?? ''
+    return `Não foi possível ler o currículo (erro ${status}${msg ? `: ${msg}` : ''}).`
   }
-  return 'Não foi possível ler o currículo. Tente de novo.'
+  const detail = error instanceof Error ? ` (${error.message})` : ''
+  return `Não foi possível ler o currículo. Tente de novo.${detail}`
 }
 
 const ano = (d: string | null) => (d ? d.slice(0, 4) : null)
