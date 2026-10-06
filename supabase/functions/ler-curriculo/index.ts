@@ -5,11 +5,13 @@ import Anthropic from 'npm:@anthropic-ai/sdk@0.131.0'
 import { betaZodOutputFormat } from 'npm:@anthropic-ai/sdk@0.131.0/helpers/beta/zod'
 import { z } from 'npm:zod@4.6.5'
 import mammoth from 'npm:mammoth@1.11.0'
+import { Buffer } from 'node:buffer'
 import { createClient } from 'npm:@supabase/supabase-js@2'
 
 const cors = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 
 const data = z.string().nullable().describe('Data no formato AAAA-MM-DD; use dia 01 se só souber mês e ano; null se não constar')
@@ -52,6 +54,16 @@ const KINDS = ['curso', 'certificacao', 'graduacao', 'pos_graduacao', 'outro']
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors })
+  try {
+    return await handle(req)
+  } catch (e) {
+    console.error(e)
+    return new Response(JSON.stringify({ error: 'Erro inesperado na leitura do currículo' }),
+      { status: 500, headers: { ...cors, 'Content-Type': 'application/json' } })
+  }
+})
+
+async function handle(req: Request): Promise<Response> {
   const json = (body: unknown, status = 200) =>
     new Response(JSON.stringify(body), { status, headers: { ...cors, 'Content-Type': 'application/json' } })
 
@@ -82,7 +94,13 @@ Deno.serve(async (req) => {
     for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000))
     documentBlock = { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: btoa(bin) } }
   } else {
-    const { value } = await mammoth.extractRawText({ arrayBuffer: bytes.buffer })
+    // No Supabase o mammoth roda na versão Node, que só aceita { buffer } (Buffer), não { arrayBuffer }
+    let value = ''
+    try {
+      value = (await mammoth.extractRawText({ buffer: Buffer.from(bytes) })).value
+    } catch {
+      return fail('Não foi possível abrir o arquivo Word. Salve como PDF e tente de novo.', 422)
+    }
     if (!value.trim()) return fail('O arquivo Word não tem texto legível', 422)
     documentBlock = { type: 'document', source: { type: 'text', media_type: 'text/plain', data: value } }
   }
@@ -132,4 +150,4 @@ Deno.serve(async (req) => {
   await supabase.from('resume_imports')
     .update({ status: 'pronto_para_revisao', extracted, error: null }).eq('id', import_id)
   return json({ extracted })
-})
+}

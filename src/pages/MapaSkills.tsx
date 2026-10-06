@@ -155,7 +155,7 @@ export default function MapaSkills() {
           {catIndex > 0 && <Button variant="secondary" onClick={() => setCategory(categories[catIndex - 1].name)}>Anterior</Button>}
           {catIndex < categories.length - 1
             ? <Button onClick={() => { setCategory(categories[catIndex + 1].name); window.scrollTo(0, 0) }}>Próxima categoria</Button>
-            : <Link to="/extras"><Button>Ir para o passo 3</Button></Link>}
+            : <Link to="/curriculo"><Button>Ir para Meu currículo</Button></Link>}
         </div>
       </div>
 

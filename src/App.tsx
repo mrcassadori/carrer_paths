@@ -5,12 +5,11 @@ import { hasBasics } from './lib/types'
 import Adocao from './pages/Adocao'
 import Curriculo from './pages/Curriculo'
 import Entrar from './pages/Entrar'
-import Experiencia from './pages/Experiencia'
-import Extras from './pages/Extras'
 import MapaSkills from './pages/MapaSkills'
 import Onboarding from './pages/Onboarding'
 import Perfil from './pages/Perfil'
 import Pessoas from './pages/Pessoas'
+import Projetos from './pages/Projetos'
 
 function Layout() {
   const { session, profile, loading, signOut } = useAuth()
@@ -28,9 +27,8 @@ function Layout() {
             <NavLink to="/" end className={link}>Meu perfil</NavLink>
             <NavLink to="/cadastro" className={link}>Sobre você</NavLink>
             <NavLink to="/skills" className={link}>Mapa de skills</NavLink>
-            <NavLink to="/experiencia" className={link}>Projetos e cursos</NavLink>
-            <NavLink to="/curriculo" className={link}>Currículo</NavLink>
-            <NavLink to="/extras" className={link}>Idiomas</NavLink>
+            <NavLink to="/curriculo" className={link}>Meu currículo</NavLink>
+            <NavLink to="/projetos" className={link}>Projetos</NavLink>
             {profile && profile.app_role !== 'colaborador' && <NavLink to="/adocao" className={link}>Adoção</NavLink>}
             {profile?.app_role === 'admin' && <NavLink to="/pessoas" className={link}>Pessoas</NavLink>}
           </nav>
@@ -58,8 +56,9 @@ export default function App() {
         <Route index element={<Perfil />} />
         <Route path="/cadastro" element={<Onboarding />} />
         <Route path="/skills" element={<MapaSkills />} />
-        <Route path="/extras" element={<Extras />} />
-        <Route path="/experiencia" element={<Experiencia />} />
+        <Route path="/projetos" element={<Projetos />} />
+        <Route path="/experiencia" element={<Navigate to="/projetos" replace />} />
+        <Route path="/extras" element={<Navigate to="/curriculo" replace />} />
         <Route path="/curriculo" element={<Curriculo />} />
         <Route path="/adocao" element={<Adocao />} />
         <Route path="/pessoas" element={<Pessoas />} />
