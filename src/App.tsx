@@ -3,7 +3,6 @@ import { useAuth } from './lib/auth'
 import { supabaseConfigured } from './lib/supabase'
 import { hasBasics } from './lib/types'
 import Adocao from './pages/Adocao'
-import Curriculo from './pages/Curriculo'
 import Entrar from './pages/Entrar'
 import MapaSkills from './pages/MapaSkills'
 import Onboarding from './pages/Onboarding'
@@ -27,7 +26,6 @@ function Layout() {
             <NavLink to="/" end className={link}>Meu perfil</NavLink>
             <NavLink to="/cadastro" className={link}>Sobre você</NavLink>
             <NavLink to="/skills" className={link}>Mapa de skills</NavLink>
-            <NavLink to="/curriculo" className={link}>Meu currículo</NavLink>
             <NavLink to="/projetos" className={link}>Projetos</NavLink>
             {profile && profile.app_role !== 'colaborador' && <NavLink to="/adocao" className={link}>Adoção</NavLink>}
             {profile?.app_role === 'admin' && <NavLink to="/pessoas" className={link}>Pessoas</NavLink>}
@@ -58,8 +56,8 @@ export default function App() {
         <Route path="/skills" element={<MapaSkills />} />
         <Route path="/projetos" element={<Projetos />} />
         <Route path="/experiencia" element={<Navigate to="/projetos" replace />} />
-        <Route path="/extras" element={<Navigate to="/curriculo" replace />} />
-        <Route path="/curriculo" element={<Curriculo />} />
+        <Route path="/extras" element={<Navigate to="/#curriculo" replace />} />
+        <Route path="/curriculo" element={<Navigate to="/#curriculo" replace />} />
         <Route path="/adocao" element={<Adocao />} />
         <Route path="/pessoas" element={<Pessoas />} />
       </Route>

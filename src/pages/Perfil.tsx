@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useCallback, useEffect, useState } from 'react'
+import { Link, useLocation } from 'react-router-dom'
+import MeuCurriculo from '../components/MeuCurriculo'
 import { Card, Tag } from '../components/ui'
 import { useAuth } from '../lib/auth'
 import { supabase } from '../lib/supabase'
@@ -29,15 +30,22 @@ const STATUS: Record<string, { label: string; tone: 'preparacao' | 'seminario' |
   contestada: { label: 'Contestada', tone: 'pendencias' },
 }
 
-/** Resumo do perfil e checklist do cadastro completo (definição do plano de adoção). */
+/** Resumo do perfil, checklist do cadastro completo (definição do plano de adoção) e currículo. */
 export default function Perfil() {
   const { profile } = useAuth()
   const [o, setO] = useState<Overview | null>(null)
   const [cats, setCats] = useState<CategoryAvg[]>([])
+  const { hash } = useLocation()
+  const profileId = profile?.id
+
+  const loadOverview = useCallback(() => {
+    if (!profileId) return
+    supabase.from('profile_overview').select('*').eq('id', profileId).single<Overview>().then(({ data }) => setO(data))
+  }, [profileId])
 
   useEffect(() => {
     if (!profile) return
-    supabase.from('profile_overview').select('*').eq('id', profile.id).single<Overview>().then(({ data }) => setO(data))
+    loadOverview()
     supabase.from('score_gaps').select('category_name, self_score').eq('profile_id', profile.id).then(({ data }) => {
       const acc = new Map<string, { sum: number; count: number }>()
       ;(data ?? []).forEach((r) => {
@@ -47,14 +55,19 @@ export default function Perfil() {
       })
       setCats([...acc].map(([name, a]) => ({ name, avg: a.sum / a.count, count: a.count })))
     })
-  }, [profile])
+  }, [profile, loadOverview])
+
+  // Links para /#curriculo (checklist, Mapa de skills) descem até a seção do currículo
+  useEffect(() => {
+    if (o && hash) document.getElementById(hash.slice(1))?.scrollIntoView({ behavior: 'smooth' })
+  }, [o, hash])
 
   if (!o) return <p className="text-apoio">Carregando…</p>
   const status = STATUS[o.assessment_status ?? 'rascunho']
   const checklist = [
     { done: o.has_basics, label: 'Sobre você: cargo, descrição, datas, trilha e nível', to: '/cadastro' },
     { done: o.skills_total > 0 && o.skills_self_rated === o.skills_total, label: `Mapa de skills (${o.skills_self_rated} de ${o.skills_total})`, to: '/skills' },
-    { done: o.has_extra, label: 'Currículo, projeto, curso ou idioma', to: '/curriculo' },
+    { done: o.has_extra, label: 'Currículo, carreira, formação, curso, idioma ou projeto', to: '/#curriculo' },
   ]
 
   return (
@@ -96,6 +109,8 @@ export default function Perfil() {
           </ul>
         </Card>
       )}
+
+      <MeuCurriculo onChanged={loadOverview} />
     </div>
   )
 }

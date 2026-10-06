@@ -1,4 +1,4 @@
-// Lê o currículo enviado (PDF ou DOCX) e devolve SUGESTÕES de cargo, resumo, projetos, cursos e idiomas.
+// Lê o currículo enviado (PDF ou DOCX) e devolve SUGESTÕES de cargo, resumo, carreira, formações, cursos e idiomas.
 // Nunca sugere notas de skill. Roda com o login de quem chamou, então o RLS do banco vale aqui também.
 // Segredo necessário: ANTHROPIC_API_KEY (Edge Functions > Secrets).
 import Anthropic from 'npm:@anthropic-ai/sdk@0.131.0'
@@ -23,14 +23,12 @@ const Sugestoes = z.object({
     language: z.string().describe('Nome do idioma em português, ex.: Inglês'),
     level: z.string().describe('Um de: basico, intermediario, avancado, fluente, nativo'),
   })),
-  projects: z.array(z.object({
-    title: z.string(),
-    client: z.string().nullable().describe('Cliente, empresa ou área'),
-    role_in_project: z.string().nullable(),
-    summary: z.string().nullable().describe('Contexto, desafio e resultado, em até 3 frases'),
+  career: z.array(z.object({
+    company: z.string().describe('Nome da empresa'),
+    job_title: z.string().nullable().describe('Cargo na empresa'),
     started_on: data,
-    ended_on: data,
-    skill_slugs: z.array(z.string()).describe('Slugs do catálogo de skills usadas no projeto, só os que o texto sustenta'),
+    ended_on: data.describe('Data de saída no formato AAAA-MM-DD; null se ainda trabalha lá ou não constar'),
+    description: z.string().nullable().describe('O que fez na empresa, em até 3 frases'),
   })),
   courses: z.array(z.object({
     kind: z.string().describe('Um de: curso, certificacao, graduacao, pos_graduacao, outro'),
@@ -43,9 +41,9 @@ const Sugestoes = z.object({
 
 const SYSTEM = `Você extrai informações de currículos para a plataforma Career Paths, usada pelo time de Design e Produto.
 Devolva só o que o currículo sustenta; não invente datas, clientes nem resultados. Escreva em português.
-Projetos: experiências relevantes dos últimos anos (cada emprego ou projeto marcante vira um item), no máximo 12.
-Cursos: formação acadêmica, cursos e certificações.
-Skills: escolha apenas slugs da lista do catálogo enviada junto. Nunca atribua notas ou níveis de skill.`
+Carreira: cada empresa por onde a pessoa passou, da mais recente para a mais antiga, incluindo a atual.
+Cursos: formação acadêmica (graduacao, pos_graduacao, incluindo MBA, mestrado e doutorado), cursos e certificações.
+Nunca atribua notas ou níveis de skill.`
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/
 const okDate = (d: string | null) => (d && DATE_RE.test(d) ? d : null)
@@ -105,10 +103,6 @@ async function handle(req: Request): Promise<Response> {
     documentBlock = { type: 'document', source: { type: 'text', media_type: 'text/plain', data: value } }
   }
 
-  const { data: skills } = await supabase.from('skills').select('slug, name').eq('active', true)
-  const catalog = (skills ?? []).map((s) => `${s.slug}: ${s.name}`).join('\n')
-  const validSlugs = new Set((skills ?? []).map((s) => s.slug))
-
   const client = new Anthropic({ apiKey: Deno.env.get('ANTHROPIC_API_KEY') })
   let parsed: z.infer<typeof Sugestoes> | null
   try {
@@ -121,10 +115,7 @@ async function handle(req: Request): Promise<Response> {
       system: SYSTEM,
       messages: [{
         role: 'user',
-        content: [
-          documentBlock,
-          { type: 'text', text: `Catálogo de skills (slug: nome):\n${catalog}\n\nExtraia as sugestões deste currículo.` },
-        ],
+        content: [documentBlock, { type: 'text', text: 'Extraia as sugestões deste currículo.' }],
       }],
     })
     if (response.stop_reason === 'refusal') return fail('A leitura automática recusou este arquivo', 422)
@@ -139,12 +130,7 @@ async function handle(req: Request): Promise<Response> {
   const extracted = {
     ...parsed,
     languages: parsed.languages.map((l) => ({ ...l, level: LEVELS.includes(l.level) ? l.level : 'intermediario' })),
-    projects: parsed.projects.map((p) => ({
-      ...p,
-      started_on: okDate(p.started_on),
-      ended_on: okDate(p.ended_on),
-      skill_slugs: p.skill_slugs.filter((s) => validSlugs.has(s)),
-    })),
+    career: parsed.career.map((c) => ({ ...c, started_on: okDate(c.started_on), ended_on: okDate(c.ended_on) })),
     courses: parsed.courses.map((c) => ({ ...c, kind: KINDS.includes(c.kind) ? c.kind : 'outro', completed_on: okDate(c.completed_on) })),
   }
   await supabase.from('resume_imports')

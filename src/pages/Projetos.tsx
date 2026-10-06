@@ -40,7 +40,7 @@ function periodo(start: string | null, end: string | null) {
   return `${start ? fmt(start) : '?'} – ${end ? fmt(end) : 'atual'}`
 }
 
-/** Projetos e cases: as evidências que sustentam as notas do mapa de skills. Cursos ficam em Meu currículo. */
+/** Projetos e cases: as evidências que sustentam as notas do mapa de skills. Carreira, cursos e idiomas ficam em Meu perfil. */
 export default function Projetos() {
   const { profile } = useAuth()
   const profileId = profile?.id
@@ -133,7 +133,7 @@ export default function Projetos() {
         <h1 className="mb-2">Projetos</h1>
         <p className="text-apoio">
           Projetos e cases são as evidências do seu mapa de skills. Notas a partir de 3 vão precisar de um projeto que as
-          sustente quando o líder da prática validar. Os projetos lidos do currículo também aparecem aqui.
+          sustente quando o líder da prática validar.
         </p>
       </div>
 
