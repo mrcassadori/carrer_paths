@@ -38,6 +38,32 @@ Se faltar dado (sem currículo, sem projetos, mapa incompleto), diga isso no res
 
 const fmtDate = (d: string | null) => (d ? d.slice(0, 7) : '?')
 
+// Preço por milhão de tokens (entrada, saída) em dólar. Com "fallbacks", outra versão do modelo pode responder.
+const PRICES: Record<string, [number, number]> = {
+  'claude-opus-5-5': [4, 20],
+  'claude-opus-5': [5, 25],
+  'claude-opus-4-8': [5, 25],
+  'claude-sonnet-5-5': [2, 10],
+}
+
+/** Registra tokens e custo estimado da chamada para o contador do painel de Adoção. Nunca derruba a função. */
+// deno-lint-ignore no-explicit-any
+async function logUsage(supabase: any, feature: string, response: Anthropic.Beta.BetaMessage) {
+  try {
+    const u = response.usage
+    const [pin, pout] = PRICES[response.model] ?? [5, 25]
+    const cacheWrite = u.cache_creation_input_tokens ?? 0
+    const cacheRead = u.cache_read_input_tokens ?? 0
+    const cost = (u.input_tokens * pin + cacheWrite * pin * 1.25 + cacheRead * pin * 0.1 + u.output_tokens * pout) / 1e6
+    await supabase.from('ai_usage').insert({
+      feature, model: response.model, input_tokens: u.input_tokens + cacheWrite + cacheRead,
+      output_tokens: u.output_tokens, cost_usd: Number(cost.toFixed(4)),
+    })
+  } catch (e) {
+    console.error('Falha ao registrar uso da IA', e)
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors })
   try {
@@ -124,6 +150,7 @@ async function handle(req: Request): Promise<Response> {
       system: SYSTEM,
       messages: [{ role: 'user', content: text }],
     })
+    await logUsage(supabase, 'analisar-perfil', response)
     if (response.stop_reason === 'refusal') return json({ error: 'A análise automática recusou estes dados' }, 422)
     parsed = response.parsed_output
   } catch (e) {

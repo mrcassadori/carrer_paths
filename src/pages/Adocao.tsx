@@ -4,9 +4,12 @@ import { supabase } from '../lib/supabase'
 
 const META = 30
 const TIME = 50
+// Mês corrente (AAAA-MM) do gasto com IA, fixado quando a página carrega
+const thisMonth = new Date().toISOString().slice(0, 7)
 
 interface Summary { signed_up: number; started: number; complete: number; submitted: number; validated: number }
 interface BySource { source: string; signed_up: number; complete: number }
+interface Usage { month: string; feature: string; calls: number; input_tokens: number; output_tokens: number; cost_usd: number }
 interface ByManager { manager_id: string; manager_name: string; team_signed_up: number; team_complete: number }
 
 /** Painel de adoção: só números agregados, nunca a lista de quem se cadastrou. */
@@ -14,19 +17,22 @@ export default function Adocao() {
   const [summary, setSummary] = useState<Summary | null>(null)
   const [sources, setSources] = useState<BySource[]>([])
   const [managers, setManagers] = useState<ByManager[]>([])
+  const [usage, setUsage] = useState<Usage[]>([])
   const [error, setError] = useState('')
 
   useEffect(() => {
     ;(async () => {
-      const [s, o, m] = await Promise.all([
+      const [s, o, m, u] = await Promise.all([
         supabase.rpc('adoption_summary').single<Summary>(),
         supabase.rpc('adoption_by_source'),
         supabase.rpc('adoption_by_manager'),
+        supabase.rpc('ai_usage_summary'),
       ])
       if (s.error) { setError(s.error.message); return }
       setSummary(s.data)
       setSources(o.data ?? [])
       setManagers(m.data ?? [])
+      setUsage(u.data ?? [])
     })()
   }, [])
 
@@ -36,6 +42,18 @@ export default function Adocao() {
   const withManager = managers.reduce((n, m) => n + Number(m.team_signed_up), 0)
   const withoutManager = Number(summary.signed_up) - withManager
   const pct = Math.min(100, (Number(summary.complete) / META) * 100)
+
+  const sum = (rows: Usage[], k: 'calls' | 'input_tokens' | 'output_tokens' | 'cost_usd') => rows.reduce((n, r) => n + Number(r[k]), 0)
+  const monthRows = usage.filter((r) => r.month.startsWith(thisMonth))
+  const tokens = (rows: Usage[]) => sum(rows, 'input_tokens') + sum(rows, 'output_tokens')
+  const usd = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  const num = (v: number) => v.toLocaleString('pt-BR')
+  const FEATURE_LABEL: Record<string, string> = { 'ler-curriculo': 'Leitura de currículo', 'analisar-perfil': 'Análise do perfil' }
+  const byFeature = Object.entries(FEATURE_LABEL).map(([key, label]) => {
+    const rows = usage.filter((r) => r.feature === key)
+    const monthR = monthRows.filter((r) => r.feature === key)
+    return { label, calls: sum(monthR, 'calls'), tokens: tokens(monthR), cost: sum(monthR, 'cost_usd'), totalCost: sum(rows, 'cost_usd') }
+  })
 
   const stats = [
     { label: 'Contas criadas', value: summary.signed_up, tone: 'preparacao' as const },
@@ -69,6 +87,35 @@ export default function Adocao() {
           </Card>
         ))}
       </div>
+
+      <Card tone="seminario" title="Gasto com IA">
+        <p className="text-sm text-apoio mb-4">
+          Tokens usados na leitura de currículo e na análise do perfil. O custo é uma estimativa em dólar pelo preço de
+          tabela do modelo; a fatura oficial fica no console da Anthropic.
+        </p>
+        <div className="grid gap-4 grid-cols-2 lg:grid-cols-4 mb-6">
+          <div><p className="text-sm text-apoio">Custo no mês</p><p className="text-3xl font-card font-semibold">{usd(sum(monthRows, 'cost_usd'))}</p></div>
+          <div><p className="text-sm text-apoio">Tokens no mês</p><p className="text-3xl font-card font-semibold">{num(tokens(monthRows))}</p></div>
+          <div><p className="text-sm text-apoio">Chamadas no mês</p><p className="text-3xl font-card font-semibold">{num(sum(monthRows, 'calls'))}</p></div>
+          <div><p className="text-sm text-apoio">Custo desde o início</p><p className="text-3xl font-card font-semibold">{usd(sum(usage, 'cost_usd'))}</p></div>
+        </div>
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="text-left text-apoio">
+              <th className="py-1">Uso</th><th className="text-right">Chamadas no mês</th><th className="text-right">Tokens no mês</th>
+              <th className="text-right">Custo no mês</th><th className="text-right">Desde o início</th>
+            </tr>
+          </thead>
+          <tbody>
+            {byFeature.map((f) => (
+              <tr key={f.label} className="border-t border-midnight/10">
+                <td className="py-1.5">{f.label}</td><td className="text-right">{num(f.calls)}</td><td className="text-right">{num(f.tokens)}</td>
+                <td className="text-right">{usd(f.cost)}</td><td className="text-right">{usd(f.totalCost)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </Card>
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card title="Por origem do link">
