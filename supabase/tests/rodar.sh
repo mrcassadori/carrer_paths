@@ -11,9 +11,11 @@ $PSQL -q -v ON_ERROR_STOP=1 -d cp < ../migrations/0001_schema.sql
 $PSQL -q -v ON_ERROR_STOP=1 -d cp < ../migrations/0002_curriculo_visivel.sql
 $PSQL -q -v ON_ERROR_STOP=1 -d cp < ../migrations/0003_carreira.sql
 $PSQL -q -v ON_ERROR_STOP=1 -d cp < ../migrations/0004_avaliacao_lider.sql
+$PSQL -q -v ON_ERROR_STOP=1 -d cp < ../migrations/0005_analise_ia.sql
 $PSQL -q -v ON_ERROR_STOP=1 -d cp < ../seed-catalogo.sql
 $PSQL -q -d cp < 10-permissoes-e-fluxo.sql
 $PSQL -q -d cp < 20-marco2.sql
 $PSQL -q -d cp < 30-marco3.sql
 $PSQL -q -d cp < 40-carreira.sql
 $PSQL -q -d cp < 50-marco4.sql
+$PSQL -q -d cp < 60-analise-ia.sql

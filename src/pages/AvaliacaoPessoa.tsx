@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import AnaliseIA from '../components/AnaliseIA'
+import RadarChart, { averagesByCategory, type RadarSeries } from '../components/RadarChart'
 import { Button, Card, ErrorText, Tag, Textarea } from '../components/ui'
 import { useAuth } from '../lib/auth'
 import { supabase } from '../lib/supabase'
@@ -15,7 +17,7 @@ interface Assessment { id: string; status: string; leader_note: string | null; o
 interface Score {
   assessment_id: string; skill_id: string; self_score: number | null; target_score: number | null
   leader_score: number | null; justification: string | null
-  skill: { name: string; description: string | null; sort_order: number; active: boolean; category: { name: string; sort_order: number } }
+  skill: { name: string; description: string | null; sort_order: number; active: boolean; category: { name: string; kind: string; sort_order: number } }
 }
 interface Career { id: string; company: string; job_title: string | null; started_on: string | null; ended_on: string | null; description: string | null }
 interface Course { id: string; kind: string; name: string; institution: string | null; completed_on: string | null; workload_hours: number | null; credential_url: string | null }
@@ -151,7 +153,7 @@ export default function AvaliacaoPessoa() {
       const [a, s] = await Promise.all([
         supabase.from('assessments').select('id, status, leader_note, one_on_one_done, return_note').eq('id', p.assessment_id).single<Assessment>(),
         supabase.from('assessment_scores')
-          .select('assessment_id, skill_id, self_score, target_score, leader_score, justification, skill:skills(name, description, sort_order, active, category:skill_categories(name, sort_order))')
+          .select('assessment_id, skill_id, self_score, target_score, leader_score, justification, skill:skills(name, description, sort_order, active, category:skill_categories(name, kind, sort_order))')
           .eq('assessment_id', p.assessment_id),
       ])
       setAssessment(a.data)
@@ -174,6 +176,21 @@ export default function AvaliacaoPessoa() {
     return [...byCat.entries()].sort((a, b) => a[1].order - b[1].order)
       .map(([name, g]) => ({ name, rows: g.rows.sort((a, b) => a.skill.sort_order - b.skill.sort_order) }))
   }, [scores, onlyDiff])
+
+  const radar = useMemo(() => {
+    const seen = new Map<string, number>()
+    scores.filter((r) => r.skill.category.kind === 'hard').forEach((r) => seen.set(r.skill.category.name, r.skill.category.sort_order))
+    const axes = [...seen.entries()].sort((a, b) => a[1] - b[1]).map(([n]) => n)
+    const cat = (r: Score) => r.skill.category.name
+    const series: RadarSeries[] = [
+      { name: 'Pessoa', color: '#0762C8', values: averagesByCategory(scores, cat, (r) => r.self_score, axes) },
+      { name: 'Esperado no nível', color: '#666666', dashed: true, values: averagesByCategory(scores, cat, (r) => expected[r.skill_id], axes) },
+    ]
+    if (scores.some((r) => r.leader_score !== null)) {
+      series.push({ name: 'Líder', color: '#FF6720', marker: 'square', values: averagesByCategory(scores, cat, (r) => r.leader_score, axes) })
+    }
+    return { axes, series }
+  }, [scores, expected])
 
   if (!loaded) return <p className="text-apoio">Carregando…</p>
   if (!person) return <p className="text-apoio">Pessoa não encontrada ou fora da sua prática. <Link className="underline" to="/avaliacoes">Voltar</Link></p>
@@ -240,6 +257,12 @@ export default function AvaliacaoPessoa() {
                 Você já pode ver as notas que a pessoa deu, mas só avalia depois que ela enviar.
                 {assessment?.return_note && <> Última devolução: "{assessment.return_note}"</>}
               </p>
+            </Card>
+          )}
+
+          {radar.axes.length >= 3 && (
+            <Card title="Hard skills por categoria" tone="preparacao">
+              <RadarChart title="Gráfico aranha das hard skills: pessoa, esperado e líder" axes={radar.axes} series={radar.series} />
             </Card>
           )}
 
@@ -361,6 +384,8 @@ export default function AvaliacaoPessoa() {
             <p className="text-xs font-card font-semibold text-apoio uppercase mt-4 mb-1">Idiomas</p>
             <p className="text-sm">{languages.length ? languages.map((l) => `${l.language} (${levelLabel(l.level).toLowerCase()})`).join(', ') : '–'}</p>
           </Card>
+
+          <AnaliseIA profileId={person.id} canGenerate={false} />
 
           <Card title={`Projetos (${projects.length})`} tone="seminario">
             {projects.length === 0 ? <p className="text-sm text-apoio">Nenhum projeto cadastrado.</p> : (

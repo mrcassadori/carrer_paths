@@ -1,5 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import AnaliseIA from '../components/AnaliseIA'
+import RadarChart, { averagesByCategory, type RadarSeries } from '../components/RadarChart'
 import { Card, Tag } from '../components/ui'
 import { useAuth } from '../lib/auth'
 import { supabase } from '../lib/supabase'
@@ -20,27 +22,37 @@ interface Overview {
   assessment_status: string | null
 }
 
-interface CategoryAvg { name: string; avg: number; count: number }
+interface Gap { category_name: string; kind: string; self_score: number | null; expected_now: number | null; validated_score: number | null }
 
-/** Resumo do perfil e checklist do cadastro completo (definição do plano de adoção). */
+/** Resumo do perfil, checklist do cadastro completo, gráfico aranha das hard skills e análise por IA. */
 export default function Perfil() {
   const { profile } = useAuth()
   const [o, setO] = useState<Overview | null>(null)
-  const [cats, setCats] = useState<CategoryAvg[]>([])
+  const [gaps, setGaps] = useState<Gap[]>([])
+  const [order, setOrder] = useState<Record<string, number>>({})
 
   useEffect(() => {
     if (!profile) return
     supabase.from('profile_overview').select('*').eq('id', profile.id).single<Overview>().then(({ data }) => setO(data))
-    supabase.from('score_gaps').select('category_name, self_score').eq('profile_id', profile.id).then(({ data }) => {
-      const acc = new Map<string, { sum: number; count: number }>()
-      ;(data ?? []).forEach((r) => {
-        if (r.self_score === null) return
-        const a = acc.get(r.category_name) ?? { sum: 0, count: 0 }
-        acc.set(r.category_name, { sum: a.sum + r.self_score, count: a.count + 1 })
-      })
-      setCats([...acc].map(([name, a]) => ({ name, avg: a.sum / a.count, count: a.count })))
-    })
+    supabase.from('score_gaps').select('category_name, kind, self_score, expected_now, validated_score')
+      .eq('profile_id', profile.id).then(({ data }) => setGaps(data ?? []))
+    supabase.from('skill_categories').select('name, sort_order')
+      .then(({ data }) => setOrder(Object.fromEntries((data ?? []).map((c) => [c.name, c.sort_order]))))
   }, [profile])
+
+  const radar = useMemo(() => {
+    const hard = gaps.filter((g) => g.kind === 'hard')
+    const axes = [...new Set(hard.map((g) => g.category_name))].sort((a, b) => (order[a] ?? 0) - (order[b] ?? 0))
+    const cat = (g: Gap) => g.category_name
+    const series: RadarSeries[] = [
+      { name: 'Sua nota', color: '#0762C8', values: averagesByCategory(hard, cat, (g) => g.self_score, axes) },
+      { name: 'Esperado no seu nível', color: '#666666', dashed: true, values: averagesByCategory(hard, cat, (g) => g.expected_now, axes) },
+    ]
+    if (hard.some((g) => g.validated_score !== null)) {
+      series.push({ name: 'Líder', color: '#FF6720', marker: 'square', values: averagesByCategory(hard, cat, (g) => g.validated_score, axes) })
+    }
+    return { axes, series, rated: hard.some((g) => g.self_score !== null) }
+  }, [gaps, order])
 
   if (!o) return <p className="text-apoio">Carregando…</p>
   const status = ASSESSMENT_STATUS[o.assessment_status ?? 'rascunho']
@@ -76,19 +88,21 @@ export default function Perfil() {
         </ul>
       </Card>
 
-      {cats.length > 0 && (
-        <Card tone="seminario" title="Sua autoavaliação por categoria">
-          <p className="text-sm text-apoio mb-4">Média das notas que você deu. Ainda não validada pelo líder.</p>
-          <ul className="space-y-3">
-            {cats.map((c) => (
-              <li key={c.name}>
-                <div className="flex justify-between text-sm"><span className="font-card font-semibold">{c.name}</span><span>{c.avg.toFixed(1)}</span></div>
-                <div className="h-2 bg-midnight/10 rounded"><div className="h-2 bg-seminario rounded" style={{ width: `${(c.avg / 5) * 100}%` }} /></div>
-              </li>
-            ))}
-          </ul>
+      {radar.rated && radar.axes.length >= 3 ? (
+        <Card tone="preparacao" title="Seu mapa de hard skills">
+          <p className="text-sm text-apoio mb-3">
+            Média das suas notas em cada categoria, comparada com o esperado para o seu nível
+            {radar.series.length > 2 ? ' e com a nota do líder da prática' : ''}.
+          </p>
+          <RadarChart title="Gráfico aranha das hard skills por categoria" axes={radar.axes} series={radar.series} />
+        </Card>
+      ) : (
+        <Card tone="preparacao" title="Seu mapa de hard skills">
+          <p className="text-sm">O gráfico aparece aqui quando você der notas no <Link className="underline" to="/skills">Mapa de skills</Link>.</p>
         </Card>
       )}
+
+      {profile && radar.rated && <AnaliseIA profileId={profile.id} canGenerate />}
     </div>
   )
 }
