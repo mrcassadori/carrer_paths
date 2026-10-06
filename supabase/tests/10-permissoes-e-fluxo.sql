@@ -1,6 +1,8 @@
 -- Testes de permissão e do fluxo de validação. Cada "erro" esperado aparece como ERROR logo abaixo do T correspondente.
 grant select, insert, update, delete on all tables in schema public to authenticated;
 grant execute on all functions in schema public to authenticated;
+-- Os testes de evidência abaixo usam a regra antiga (nota >= 3 exige evidência)
+update review_cycles set evidence_required_from = 3;
 insert into practices(name) values ('Dados');
 select id as pa from practices where name='Design & Produto' \gset
 select id as pb from practices where name='Dados' \gset

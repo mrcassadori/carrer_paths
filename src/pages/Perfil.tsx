@@ -4,6 +4,7 @@ import { Card, Tag } from '../components/ui'
 import { useAuth } from '../lib/auth'
 import { supabase } from '../lib/supabase'
 import { tempoDesde } from '../lib/time'
+import { ASSESSMENT_STATUS } from '../lib/types'
 
 interface Overview {
   track_name: string | null
@@ -20,14 +21,6 @@ interface Overview {
 }
 
 interface CategoryAvg { name: string; avg: number; count: number }
-
-const STATUS: Record<string, { label: string; tone: 'preparacao' | 'seminario' | 'consolidacao' | 'pendencias' }> = {
-  rascunho: { label: 'Autoavaliação em andamento', tone: 'preparacao' },
-  enviada: { label: 'Enviada para validação', tone: 'seminario' },
-  em_revisao: { label: 'Em revisão pelo líder', tone: 'seminario' },
-  validada: { label: 'Validada', tone: 'consolidacao' },
-  contestada: { label: 'Contestada', tone: 'pendencias' },
-}
 
 /** Resumo do perfil e checklist do cadastro completo (definição do plano de adoção). */
 export default function Perfil() {
@@ -50,7 +43,7 @@ export default function Perfil() {
   }, [profile])
 
   if (!o) return <p className="text-apoio">Carregando…</p>
-  const status = STATUS[o.assessment_status ?? 'rascunho']
+  const status = ASSESSMENT_STATUS[o.assessment_status ?? 'rascunho']
   const checklist = [
     { done: o.has_basics, label: 'Sobre você: cargo, descrição, datas, trilha e nível', to: '/cadastro' },
     { done: o.skills_total > 0 && o.skills_self_rated === o.skills_total, label: `Mapa de skills (${o.skills_self_rated} de ${o.skills_total})`, to: '/skills' },

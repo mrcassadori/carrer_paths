@@ -3,6 +3,8 @@ import { useAuth } from './lib/auth'
 import { supabaseConfigured } from './lib/supabase'
 import { hasBasics } from './lib/types'
 import Adocao from './pages/Adocao'
+import AvaliacaoPessoa from './pages/AvaliacaoPessoa'
+import Avaliacoes from './pages/Avaliacoes'
 import Entrar from './pages/Entrar'
 import MapaSkills from './pages/MapaSkills'
 import Onboarding from './pages/Onboarding'
@@ -27,6 +29,7 @@ function Layout() {
             <NavLink to="/cadastro" className={link}>Sobre você</NavLink>
             <NavLink to="/skills" className={link}>Mapa de skills</NavLink>
             <NavLink to="/projetos" className={link}>Projetos</NavLink>
+            {profile && ['lider_pratica', 'admin'].includes(profile.app_role) && <NavLink to="/avaliacoes" className={link}>Avaliações</NavLink>}
             {profile && profile.app_role !== 'colaborador' && <NavLink to="/adocao" className={link}>Adoção</NavLink>}
             {profile?.app_role === 'admin' && <NavLink to="/pessoas" className={link}>Pessoas</NavLink>}
           </nav>
@@ -58,6 +61,8 @@ export default function App() {
         <Route path="/experiencia" element={<Navigate to="/projetos" replace />} />
         <Route path="/extras" element={<Navigate to="/cadastro#curriculo" replace />} />
         <Route path="/curriculo" element={<Navigate to="/cadastro#curriculo" replace />} />
+        <Route path="/avaliacoes" element={<Avaliacoes />} />
+        <Route path="/avaliacoes/:id" element={<AvaliacaoPessoa />} />
         <Route path="/adocao" element={<Adocao />} />
         <Route path="/pessoas" element={<Pessoas />} />
       </Route>

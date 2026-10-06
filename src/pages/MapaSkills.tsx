@@ -12,6 +12,8 @@ export default function MapaSkills() {
   const { profile } = useAuth()
   const [assessmentId, setAssessmentId] = useState<string | null>(null)
   const [status, setStatus] = useState<string>('rascunho')
+  const [notes, setNotes] = useState<{ return_note: string | null; leader_note: string | null }>({ return_note: null, leader_note: null })
+  const [submitting, setSubmitting] = useState(false)
   const [rows, setRows] = useState<ScoreRow[]>([])
   const [weights, setWeights] = useState<Record<string, Weight>>({})
   const [expected, setExpected] = useState<Record<string, number>>({})
@@ -27,9 +29,9 @@ export default function MapaSkills() {
       if (error) { setError(error.message); return }
       setAssessmentId(aid)
       const [a, s, w, e, sc] = await Promise.all([
-        supabase.from('assessments').select('status').eq('id', aid).single(),
+        supabase.from('assessments').select('status, return_note, leader_note').eq('id', aid).single(),
         supabase.from('assessment_scores')
-          .select('skill_id, self_score, target_score, skill:skills(name, description, sort_order, active, category:skill_categories(name, kind, sort_order))')
+          .select('skill_id, self_score, target_score, leader_score, justification, skill:skills(name, description, sort_order, active, category:skill_categories(name, kind, sort_order))')
           .eq('assessment_id', aid),
         supabase.from('skill_track_weights').select('skill_id, weight').eq('track_id', profile.track_id),
         supabase.from('skill_expectations').select('skill_id, expected_level')
@@ -37,6 +39,7 @@ export default function MapaSkills() {
         supabase.from('scale_levels').select('*').order('score'),
       ])
       setStatus(a.data?.status ?? 'rascunho')
+      setNotes({ return_note: a.data?.return_note ?? null, leader_note: a.data?.leader_note ?? null })
       const loaded = ((s.data ?? []) as unknown as ScoreRow[]).filter((r) => r.skill.active)
       setRows(loaded)
       setWeights(Object.fromEntries((w.data ?? []).map((x) => [x.skill_id, x.weight])))
@@ -71,6 +74,16 @@ export default function MapaSkills() {
     if (error) setError(error.message)
   }
 
+  async function submit() {
+    if (!assessmentId || !window.confirm('Enviar para o líder da prática? Depois de enviar, suas notas não podem mais ser alteradas.')) return
+    setSubmitting(true)
+    setError('')
+    const { error } = await supabase.rpc('submit_assessment', { a: assessmentId })
+    setSubmitting(false)
+    if (error) { setError(error.message); return }
+    setStatus('enviada')
+  }
+
   if (!profile?.track_id || !profile.level_id) {
     return <p>Complete <Link className="underline" to="/cadastro">Sobre você</Link> antes do mapa de skills.</p>
   }
@@ -89,7 +102,20 @@ export default function MapaSkills() {
         <div className="h-2 bg-midnight/10 rounded mb-6" aria-hidden>
           <div className="h-2 bg-preparacao rounded" style={{ width: `${rows.length ? (rated / rows.length) * 100 : 0}%` }} />
         </div>
-        {!editable && <ErrorText>Sua avaliação foi enviada para validação e não pode mais ser editada.</ErrorText>}
+        {editable && notes.return_note && (
+          <ErrorText>O líder devolveu sua avaliação: "{notes.return_note}". Ajuste e envie de novo.</ErrorText>
+        )}
+        {(status === 'enviada' || status === 'em_revisao') && (
+          <p role="status" className="text-sm bg-seminario/10 border-l-4 border-seminario px-3 py-2 rounded mb-4">
+            Sua autoavaliação está com o líder da prática. Suas notas não mudam mais; a nota do líder vai aparecer ao lado de cada uma.
+          </p>
+        )}
+        {status === 'validada' && (
+          <Card tone="consolidacao" title="Avaliação do líder" className="mb-6">
+            <p className="text-sm mb-2">Sua nota continua a mesma. A nota do líder aparece ao lado em cada skill, com a justificativa quando for diferente.</p>
+            {notes.leader_note && <p className="text-sm whitespace-pre-line">{notes.leader_note}</p>}
+          </Card>
+        )}
         <ErrorText>{error}</ErrorText>
 
         <nav className="flex flex-wrap gap-2 mb-6" aria-label="Categorias">
@@ -145,7 +171,13 @@ export default function MapaSkills() {
                     </select>
                   </label>
                   {r.self_score !== null && <span className="text-sm text-apoio pb-2">{labelOf(r.self_score)}</span>}
+                  {status === 'validada' && r.leader_score != null && (
+                    <span className="pb-2"><Tag tone={r.leader_score === r.self_score ? 'consolidacao' : 'seminario'}>Líder: {r.leader_score}</Tag></span>
+                  )}
                 </div>
+                {status === 'validada' && r.justification && (
+                  <p className="text-sm mt-3"><span className="font-card font-semibold">Justificativa do líder:</span> {r.justification}</p>
+                )}
               </Card>
             )
           })}
@@ -155,8 +187,14 @@ export default function MapaSkills() {
           {catIndex > 0 && <Button variant="secondary" onClick={() => setCategory(categories[catIndex - 1].name)}>Anterior</Button>}
           {catIndex < categories.length - 1
             ? <Button onClick={() => { setCategory(categories[catIndex + 1].name); window.scrollTo(0, 0) }}>Próxima categoria</Button>
-            : <Link to="/cadastro#curriculo"><Button>Ir para o currículo</Button></Link>}
+            : <Link to="/cadastro#curriculo"><Button variant={editable && rated === rows.length ? 'secondary' : 'primary'}>Ir para o currículo</Button></Link>}
+          {editable && rated === rows.length && rows.length > 0 && (
+            <Button onClick={submit} disabled={submitting}>{submitting ? 'Enviando…' : 'Enviar para o líder'}</Button>
+          )}
         </div>
+        {editable && rated < rows.length && (
+          <p className="text-sm text-apoio mt-3">Quando todas as skills tiverem nota, aparece o botão para enviar ao líder da prática.</p>
+        )}
       </div>
 
       <aside className="lg:sticky lg:top-6 self-start">

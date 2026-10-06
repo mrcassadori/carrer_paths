@@ -25,6 +25,8 @@ export interface ScoreRow {
   skill_id: string
   self_score: number | null
   target_score: number | null
+  leader_score?: number | null
+  justification?: string | null
   skill: {
     name: string
     description: string | null
@@ -69,4 +71,12 @@ export const ROLE_LABEL: Record<AppRole, string> = {
   gestor: 'Gestor',
   lider_pratica: 'Líder da prática',
   admin: 'Admin',
+}
+
+export const ASSESSMENT_STATUS: Record<string, { label: string; tone: 'preparacao' | 'seminario' | 'consolidacao' | 'pendencias' }> = {
+  rascunho: { label: 'Autoavaliação em andamento', tone: 'preparacao' },
+  enviada: { label: 'Enviada para o líder', tone: 'seminario' },
+  em_revisao: { label: 'Em avaliação pelo líder', tone: 'seminario' },
+  validada: { label: 'Avaliada pelo líder', tone: 'consolidacao' },
+  contestada: { label: 'Contestada', tone: 'pendencias' },
 }

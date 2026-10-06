@@ -132,8 +132,8 @@ export default function Projetos() {
       <div>
         <h1 className="mb-2">Projetos</h1>
         <p className="text-apoio">
-          Projetos e cases são as evidências do seu mapa de skills. Notas a partir de 3 vão precisar de um projeto que as
-          sustente quando o líder da prática validar.
+          Projetos e cases mostram na prática o que você marcou no mapa de skills. O líder da prática vê esta lista
+          ao avaliar suas notas, então vale descrever seu papel e deixar o link.
         </p>
       </div>
 
